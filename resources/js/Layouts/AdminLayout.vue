@@ -23,7 +23,7 @@ const sidebarOpen = ref(false)
 const user = computed(() => {
   return page.props.auth?.user ?? {
     name: 'Administrator',
-    role: 'Superadmin',
+    role: 'superadmin',
   }
 })
 
@@ -81,9 +81,9 @@ const isActive = (name) => {
           href="/dev/dashboard"
           :class="[
             'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
-            isActive('/dashboard')
-              ? 'bg-blue-50 text-blue-600'
-              : 'text-slate-600 hover:bg-slate-100',
+            isActive('/dev/dashboard')
+                ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500'
+                : 'text-slate-600 hover:bg-slate-100',
           ]"
         >
           <LayoutDashboard class="w-5 h-5" />
@@ -94,9 +94,9 @@ const isActive = (name) => {
           href="/dev/klien"
           :class="[
             'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
-            isActive('/klien')
-              ? 'bg-blue-50 text-blue-600'
-              : 'text-slate-600 hover:bg-slate-100',
+            isActive('/dev/klien')
+            ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500'
+            : 'text-slate-600 hover:bg-slate-100'
           ]"
         >
           <Users class="w-5 h-5" />
@@ -144,12 +144,20 @@ const isActive = (name) => {
 
         <!-- User Info -->
         <div class="text-right">
-          <div class="text-sm font-medium text-slate-800">
+        <div class="text-sm font-medium text-slate-800">
             {{ user.name }}
-          </div>
-          <div class="text-xs text-slate-500">
+        </div>
+
+        <div
+            class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-medium capitalize"
+            :class="{
+            'bg-red-50 text-red-600': user.role === 'superadmin',
+            'bg-blue-50 text-blue-600': user.role === 'operator',
+            'bg-green-50 text-green-600': user.role === 'ketua tim',
+            }"
+        >
             {{ user.role }}
-          </div>
+        </div>
         </div>
       </header>
 

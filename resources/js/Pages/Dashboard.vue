@@ -7,7 +7,27 @@ import {
   CheckCircle,
   FileDown,
 } from 'lucide-vue-next'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+
+/* =======================
+   CHART.JS IMPORT
+======================= */
+import {
+  Chart,
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+} from 'chart.js'
+
+Chart.register(
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip
+)
 
 /**
  * User
@@ -47,6 +67,68 @@ const kinerjaNarasumber = ref([
   { nama: 'Narasumber C', jumlah: 5 },
   { nama: 'Narasumber D', jumlah: 3 },
 ])
+
+/**
+ * Chart refs
+ */
+const chartRef = ref(null)
+let chartInstance = null
+
+onMounted(() => {
+  if (!chartRef.value) return
+
+  const labels = kinerjaNarasumber.value.map(i => i.nama)
+  const data = kinerjaNarasumber.value.map(i => i.jumlah)
+
+  chartInstance = new Chart(chartRef.value, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Jumlah Konsultasi',
+          data,
+          backgroundColor: '#3b82f6', // blue-500
+          borderRadius: 6,
+          barThickness: 14,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f172a',
+          titleColor: '#ffffff',
+          bodyColor: '#ffffff',
+          displayColors: false, // ⬅️ INI KUNCINYA
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (item) => `Jumlah Konsultasi: ${item.raw}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: {
+            color: '#e2e8f0',
+          },
+          ticks: {
+            precision: 0,
+          },
+        },
+        y: {
+          grid: {
+            display: false,
+          },
+        },
+      },
+    },
+  })
+})
 
 /**
  * Export (dummy)
@@ -169,7 +251,7 @@ const exportPdf = () => {
         </ul>
       </div>
 
-      <!-- CHART PLACEHOLDER -->
+      <!-- CHART -->
       <div
         class="bg-white rounded-xl border border-slate-200 p-4 lg:col-span-2"
       >
@@ -180,25 +262,9 @@ const exportPdf = () => {
           Jumlah konsultasi yang ditangani oleh masing-masing narasumber
         </p>
 
-        <!-- DUMMY BAR CHART -->
-        <div class="space-y-3">
-          <div
-            v-for="item in kinerjaNarasumber"
-            :key="item.nama"
-          >
-            <div class="flex justify-between text-sm mb-1">
-              <span class="text-slate-600">{{ item.nama }}</span>
-              <span class="font-medium text-slate-800">
-                {{ item.jumlah }}
-              </span>
-            </div>
-            <div class="h-2 bg-slate-100 rounded">
-              <div
-                class="h-2 bg-blue-500 rounded"
-                :style="{ width: (item.jumlah * 10) + '%' }"
-              ></div>
-            </div>
-          </div>
+        <!-- CHART.JS CANVAS -->
+        <div class="relative h-64 sm:h-72">
+          <canvas ref="chartRef"></canvas>
         </div>
       </div>
     </div>

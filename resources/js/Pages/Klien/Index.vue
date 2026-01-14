@@ -9,6 +9,8 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-vue-next'
 
 import {
@@ -185,6 +187,8 @@ const handleSort = (field) => {
     currentPage.value = 1
 }
 
+const isSorted = (field) => sortBy.value === field
+
 /* ======================
    MODAL STATE
 ====================== */
@@ -305,10 +309,22 @@ const copyText = (text) => {
             <!-- SESI -->
            <th
             class="px-4 py-3 text-left font-semibold cursor-pointer
-                    hover:text-blue-700 transition"
+                    hover:text-blue-700 transition select-none"
             @click="handleSort('sesi')"
             >
-            Sesi
+            <div class="flex items-center gap-1">
+                Sesi
+
+                <ChevronUp
+                v-if="isSorted('sesi') && sortDirection === 'asc'"
+                class="w-3 h-3 text-blue-600"
+                />
+
+                <ChevronDown
+                v-if="isSorted('sesi') && sortDirection === 'desc'"
+                class="w-3 h-3 text-blue-600"
+                />
+            </div>
             </th>
 
             <th class="px-4 py-3 text-left font-semibold">
@@ -321,7 +337,18 @@ const copyText = (text) => {
                     hover:text-blue-700 transition"
             @click="handleSort('nama')"
             >
-            Nama
+            <div class="flex items-center gap-1">
+                Nama
+                <ChevronUp
+                v-if="isSorted('nama') && sortDirection === 'asc'"
+                class="w-3 h-3 text-blue-600"
+                />
+
+                <ChevronDown
+                v-if="isSorted('nama') && sortDirection === 'desc'"
+                class="w-3 h-3 text-blue-600"
+                />
+            </div>
             </th>
 
 
@@ -331,7 +358,18 @@ const copyText = (text) => {
                     hover:text-blue-700 transition"
             @click="handleSort('instansi')"
             >
+            <div class="flex items-center gap-1">
             Instansi
+                <ChevronUp
+                v-if="isSorted('instansi') && sortDirection === 'asc'"
+                class="w-3 h-3 text-blue-600"
+                />
+
+                <ChevronDown
+                v-if="isSorted('instansi') && sortDirection === 'desc'"
+                class="w-3 h-3 text-blue-600"
+                />
+            </div>
             </th>
 
 

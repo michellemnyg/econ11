@@ -1,30 +1,42 @@
 <script setup>
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import AdminLayout from '@/Layouts/AdminLayout.vue'
+import { Head, usePage } from '@inertiajs/vue3'
+
+const page = usePage()
+
+const userName = page.props.auth?.user?.name ?? 'Administrator'
 </script>
 
 <template>
-    <Head title="Dashboard" />
+  <Head title="Dashboard" />
 
-    <AuthenticatedLayout>
-        <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800"
-            >
-                Dashboard
-            </h2>
-        </template>
+  <AdminLayout>
+    <!-- WELCOME -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-slate-800">
+        Selamat datang, {{ userName }}
+      </h2>
+      <p class="text-sm text-slate-500 mt-1">
+        Berikut ringkasan aktivitas konsultasi hari ini.
+      </p>
+    </div>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                <div
-                    class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
-                >
-                    <div class="p-6 text-gray-900">
-                        You're logged in!
-                    </div>
-                </div>
-            </div>
-        </div>
-    </AuthenticatedLayout>
+    <!-- DUMMY CONTENT -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <p class="text-sm text-slate-500">Total Klien</p>
+        <p class="text-2xl font-bold text-slate-800">24</p>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <p class="text-sm text-slate-500">Konsultasi Aktif</p>
+        <p class="text-2xl font-bold text-slate-800">7</p>
+      </div>
+
+      <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <p class="text-sm text-slate-500">Selesai</p>
+        <p class="text-2xl font-bold text-slate-800">15</p>
+      </div>
+    </div>
+  </AdminLayout>
 </template>

@@ -22,8 +22,8 @@ const sidebarOpen = ref(false)
  */
 const user = computed(() => {
   return page.props.auth?.user ?? {
-    name: 'Administrator',
-    role: 'superadmin',
+    name: 'Nama Operator',
+    role: 'operator',
   }
 })
 

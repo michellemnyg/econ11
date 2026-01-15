@@ -1,91 +1,188 @@
 <script setup>
 import { ref } from 'vue'
-import { ArrowUp } from 'lucide-vue-next'
+import { ArrowUp, FileText } from 'lucide-vue-next'
+
+const topics = [
+  {title: 'Penyusunan dan Penetapan Kebutuhan', desc: 'Penyusunan kebutuhan pegawai berdasarkan Analisis Jabatan (Anjab) dan Analisis Beban Kerja (ABK)'},
+  {title: 'Pengadaan', desc: 'Pengadaan Pegawai Negeri Sipil untuk mengisi formasi yang lowong'},
+  {title: 'Pangkat dan Jabatan', desc: 'Tingkat atau jenjang kedudukan seorang ASN dalam sistem kepegawaian'},
+  {title: 'Pengembangan Karir', desc: 'Perjalanan kemajuan ASN/PNS secara individual dalam jenjang jabatan/kepangkatan'},
+  {title: 'Pola Karir', desc: 'Urutan penempatan dan perpindahan PNS dalam dan antar jabatan secara berkesinambungan'},
+  {title: 'Promosi', desc: 'Promosi berdasarkan prestasi kerja dan senioritas'},
+  {title: 'Mutasi', desc: 'Perubahan status PNS seperti pengangkatan, pemindahan, pemberhentian, dll.'},
+  {title: 'Penilaian Kinerja', desc: 'Perbandingan realisasi kinerja dengan target yang telah ditetapkan'},
+  {title: 'Penggajian dan Tunjangan', desc: 'Informasi hak gaji dan tunjangan ASN'},
+  {title: 'Penghargaan', desc: 'Bentuk penghargaan dan tanda kehormatan ASN'},
+  {title: 'Disiplin', desc: 'Kewajiban dan larangan ASN sesuai peraturan perundang-undangan'},
+  {title: 'Pemberhentian', desc: 'Pemberhentian sebagai ASN atau dari jabatan'},
+  {title: 'Jaminan Pensiun dan Hari Tua', desc: 'Hak pensiun dan jaminan hari tua ASN'},
+  {title: 'Perlindungan', desc: 'Jaminan dan bantuan hukum bagi ASN'},
+  {title: 'Manajemen PPPK', desc: 'Pengelolaan Pegawai Pemerintah dengan Perjanjian Kerja'},
+]
+
+const scrollToForm = () => {
+  const form = document.querySelector('[data-form]')
+  form?.scrollIntoView({ behavior: 'smooth' })
+}
+
+const showTopics = ref(false)
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col bg-slate-50">
     <!-- HEADER / HERO -->
-<header
-  class="relative min-h-screen bg-cover bg-center"
-  style="background-image: url('https://i.ibb.co.com/N2zYq8Zg/kantor1.jpg')"
->
-  <!-- OVERLAY -->
-  <div class="absolute inset-0 bg-blue-500/80"></div>
-
-  <nav
-  class="relative z-10 max-w-7xl mx-auto px-6 py-6 flex items-center justify-between"
->
-  <!-- LOGO -->
-  <div class="flex items-center gap-3">
-    <div
-      class="w-12 h-12 rounded-full bg-white flex items-center justify-center font-bold text-blue-600 text-xl"
+    <header
+      class="relative min-h-screen bg-cover bg-center"
+      style="background-image: url('https://i.ibb.co.com/N2zYq8Zg/kantor1.jpg')"
     >
-      e
-    </div>
-    <span
-      class="text-xl font-semibold text-white tracking-wide hover:text-blue-200 transition"
-    >
-      con11
-    </span>
-  </div>
+      <!-- OVERLAY -->
+      <div class="absolute inset-0 bg-blue-500/80"></div>
 
-  <!-- MENU -->
-  <div class="flex gap-8 text-base font-medium text-white">
-    <a
-      href="#"
-      class="relative pb-1 transition after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-red-500 after:transition-all after:duration-300 hover:after:w-full"
-    >
-      HOME
-    </a>
-    <a
-      href="#"
-      class="relative pb-1 transition after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-red-500 after:transition-all after:duration-300 hover:after:w-full"
-    >
-      INFORMASI
-    </a>
-  </div>
-</nav>
+      <!-- NAVBAR -->
+      <div class="relative z-20">
+        <nav class="max-w-7xl mx-auto px-6 py-6 flex justify-center">
+          <div class="flex items-center gap-8">
+            <div
+              class="flex items-center gap-3 cursor-pointer
+                     transition-transform duration-300 hover:scale-[1.03]"
+            >
+              <div
+                class="w-12 h-12 rounded-full bg-blue-600
+                       flex items-center justify-center
+                       font-bold text-white text-xl shadow-lg border border-white/10"
+              >
+                e
+              </div>
+              <span
+                class="text-3xl font-bold text-white tracking-tight
+                       transition-colors duration-300
+                       hover:text-red-500"
+              >
+                con11
+              </span>
+            </div>
 
-  <!-- HERO CONTENT -->
-  <div
-    class="relative z-10 max-w-7xl mx-auto px-6 flex flex-col justify-center min-h-[calc(100vh-72px)]"
-  >
-    <div class="grid lg:grid-cols-2 gap-10 items-center">
-      <!-- TITLE -->
-        <div class="text-white pl-6 border-l-4 border-white/80">
-        <h1 class="text-4xl lg:text-5xl font-bold leading-tight
-                transition-colors duration-300
-                hover:text-red-400">
-            Konsultasi Online
-        </h1>
-        <h2 class="text-2xl lg:text-3xl font-semibold mt-3
-                transition-colors duration-300
-                hover:text-red-300">
-            Kantor Regional XI BKN
-        </h2>
-        <p class="mt-6 text-blue-100 text-base leading-relaxed max-w-xl">
-            Media penunjang fasilitasi konsultasi kepegawaian
-        </p>
-        </div>
+            <div class="h-10 w-[2px] bg-white/30"></div>
 
-      <!-- FORM WRAPPER -->
-      <div
-        class="bg-white rounded-2xl shadow-xl p-6 lg:p-8 w-full"
-      >
-        <!-- SLOT FORM -->
-        <slot name="form" />
+            <div class="leading-tight text-left">
+            <p class="text-sm sm:text-xl font-bold text-white">
+                Konsultasi Online
+            </p>
+            <p class="text-xs sm:text-base font-semibold text-white/90">
+                Kantor Regional XI BKN
+            </p>
+            </div>
+          </div>
+        </nav>
       </div>
-    </div>
-  </div>
-</header>
 
+      <!-- HERO -->
+      <div
+        class="relative z-10 max-w-7xl mx-auto px-6
+               min-h-[calc(100vh-120px)]
+               flex items-center"
+      >
+        <div
+          class="grid w-full items-center transition-all duration-500"
+          :class="showTopics ? 'lg:grid-cols-2 gap-12' : 'lg:grid-cols-1 justify-items-center'"
+        >
+          <!-- LEFT -->
+          <div
+            class="text-white text-left transition-all duration-500"
+            :class="showTopics ? 'justify-self-start' : 'max-w-xl'"
+          >
+            <h1 class="text-4xl lg:text-5xl font-bold leading-tight">
+              Konsultasi Kepegawaian
+            </h1>
+            <p class="mt-6 text-blue-100 text-base leading-relaxed">
+              Media penunjang fasilitasi konsultasi kepegawaian bagi ASN
+              dalam rangka peningkatan kualitas layanan manajemen ASN
+            </p>
 
-    <!-- MAIN CONTENT -->
+            <div class="mt-10 flex items-center gap-6">
+              <button
+                @click="showTopics = true"
+                class="flex items-center gap-2 text-white
+                       hover:text-red-300 transition"
+              >
+                <FileText class="w-6 h-6" />
+                <span class="text-sm font-medium">
+                  Topik Konsultasi
+                </span>
+              </button>
+
+              <button
+                @click="scrollToForm"
+                class="flex items-center gap-2
+                       text-red-400 hover:text-red-300 transition"
+              >
+                <FileText class="w-6 h-6" />
+                <span class="text-sm font-medium">
+                  Isi Form
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- MODAL TOPIK -->
+        <div
+        v-if="showTopics"
+        class="relative transition-all duration-500 pt-10"
+        >
+        <!-- CLOSE BUTTON (CENTER TOP) -->
+        <button
+            @click="showTopics = false"
+            aria-label="Tutup"
+            class="absolute top-0 left-1/2
+                -translate-x-1/2 -translate-y-1/2
+                w-9 h-9
+                flex items-center justify-center
+                rounded-lg
+                bg-white
+                text-black
+                shadow
+                hover:text-red-500 transition"
+        >
+            ✕
+        </button>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
+            <div
+            v-for="topic in topics"
+            :key="topic.title"
+            class="group cursor-pointer
+                    bg-white text-blue-600
+                    rounded-xl
+                    px-4 py-3
+                    flex items-center justify-center text-center
+                    transition-all duration-300
+                    hover:scale-110 hover:bg-blue-500 hover:text-white"
+            >
+            <div>
+                <p class="font-semibold text-sm leading-snug">
+                {{ topic.title }}
+                </p>
+
+                <p
+                class="mt-2 text-xs text-blue-100
+                        opacity-0 max-h-0 overflow-hidden
+                        group-hover:opacity-100 group-hover:max-h-32
+                        transition-all duration-300"
+                >
+                {{ topic.desc }}
+                </p>
+            </div>
+            </div>
+        </div>
+        </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN -->
     <main class="flex-1">
       <div class="max-w-7xl mx-auto px-6 py-16">
-        <!-- SLOT CONTENT -->
-        <slot />
+        <slot name="form"/>
       </div>
     </main>
 

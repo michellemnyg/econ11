@@ -13,34 +13,39 @@ import { ArrowUp } from 'lucide-vue-next'
   <!-- OVERLAY -->
   <div class="absolute inset-0 bg-blue-500/80"></div>
 
-  <!-- NAVBAR -->
   <nav
-    class="relative z-10 max-w-7xl mx-auto px-6 py-4 flex items-center justify-between"
-  >
-    <!-- LOGO -->
-    <div class="flex items-center gap-2">
-      <div
-        class="w-10 h-10 rounded-full bg-white flex items-center justify-center font-bold text-blue-600"
-      >
-        e
-      </div>
-      <span
-        class="text-lg font-semibold text-white tracking-wide hover:text-blue-200 transition"
-      >
-        con11
-      </span>
+  class="relative z-10 max-w-7xl mx-auto px-6 py-6 flex items-center justify-between"
+>
+  <!-- LOGO -->
+  <div class="flex items-center gap-3">
+    <div
+      class="w-12 h-12 rounded-full bg-white flex items-center justify-center font-bold text-blue-600 text-xl"
+    >
+      e
     </div>
+    <span
+      class="text-xl font-semibold text-white tracking-wide hover:text-blue-200 transition"
+    >
+      con11
+    </span>
+  </div>
 
-    <!-- MENU -->
-    <div class="flex gap-6 text-sm font-medium text-white">
-      <a href="#" class="hover:text-blue-200 transition">
-        Home
-      </a>
-      <a href="#" class="hover:text-blue-200 transition">
-        Informasi
-      </a>
-    </div>
-  </nav>
+  <!-- MENU -->
+  <div class="flex gap-8 text-base font-medium text-white">
+    <a
+      href="#"
+      class="relative pb-1 transition after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-red-500 after:transition-all after:duration-300 hover:after:w-full"
+    >
+      HOME
+    </a>
+    <a
+      href="#"
+      class="relative pb-1 transition after:absolute after:left-0 after:bottom-0 after:h-[2px] after:w-0 after:bg-red-500 after:transition-all after:duration-300 hover:after:w-full"
+    >
+      INFORMASI
+    </a>
+  </div>
+</nav>
 
   <!-- HERO CONTENT -->
   <div
@@ -48,17 +53,21 @@ import { ArrowUp } from 'lucide-vue-next'
   >
     <div class="grid lg:grid-cols-2 gap-10 items-center">
       <!-- TITLE -->
-      <div class="text-white">
-        <h1 class="text-3xl lg:text-4xl font-bold leading-tight">
-          Konsultasi Online
+        <div class="text-white pl-6 border-l-4 border-white/80">
+        <h1 class="text-4xl lg:text-5xl font-bold leading-tight
+                transition-colors duration-300
+                hover:text-red-400">
+            Konsultasi Online
         </h1>
-        <h2 class="text-xl lg:text-2xl font-semibold mt-2">
-          Kantor Regional XI BKN
+        <h2 class="text-2xl lg:text-3xl font-semibold mt-3
+                transition-colors duration-300
+                hover:text-red-300">
+            Kantor Regional XI BKN
         </h2>
-        <p class="mt-4 text-blue-100 text-sm leading-relaxed max-w-xl">
-          Media penunjang fasilitasi konsultasi kepegawaian
+        <p class="mt-6 text-blue-100 text-base leading-relaxed max-w-xl">
+            Media penunjang fasilitasi konsultasi kepegawaian
         </p>
-      </div>
+        </div>
 
       <!-- FORM WRAPPER -->
       <div

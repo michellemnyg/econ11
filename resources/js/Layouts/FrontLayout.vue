@@ -197,19 +197,25 @@ const showTopics = ref(false)
 
     <!-- FOOTER -->
     <footer class="bg-slate-800 text-slate-300 text-sm py-6">
-      <div class="max-w-7xl mx-auto px-6 flex justify-between items-center">
-        <p>
-          © {{ new Date().getFullYear() }} Kantor Regional XI BKN
+    <div
+        class="max-w-7xl mx-auto px-6
+            flex flex-col gap-4
+            sm:flex-row sm:justify-between sm:items-center"
+    >
+        <p class="text-center sm:text-left">
+        © {{ new Date().getFullYear() }} Kantor Regional XI BKN
         </p>
 
         <button
-          @click="scrollToTop"
-          class="flex items-center gap-2 text-slate-300 hover:text-white transition"
+        @click="scrollToTop"
+        class="flex items-center justify-center gap-2
+                text-slate-300 hover:text-white transition"
         >
-          <ArrowUp class="w-4 h-4" />
-          Kembali ke atas
+        <ArrowUp class="w-4 h-4" />
+        Kembali ke atas
         </button>
-      </div>
+    </div>
     </footer>
+
   </div>
 </template>

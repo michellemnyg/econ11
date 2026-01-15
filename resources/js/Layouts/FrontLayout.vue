@@ -20,9 +20,17 @@ const topics = [
   {title: 'Manajemen PPPK', desc: 'Pengelolaan Pegawai Pemerintah dengan Perjanjian Kerja'},
 ]
 
-const scrollToForm = () => {
-  const form = document.querySelector('[data-form]')
-  form?.scrollIntoView({ behavior: 'smooth' })
+const emit = defineEmits(['scroll-form'])
+
+const requestScrollForm = () => {
+  emit('scroll-form')
+}
+
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
 }
 
 const showTopics = ref(false)
@@ -32,7 +40,8 @@ const showTopics = ref(false)
   <div class="min-h-screen flex flex-col bg-slate-50">
     <!-- HEADER / HERO -->
     <header
-      class="relative min-h-screen bg-cover bg-center"
+      class="relative min-h-screen bg-cover bg-center
+      pb-24 sm:pb-0"
       style="background-image: url('https://i.ibb.co.com/N2zYq8Zg/kantor1.jpg')"
     >
       <!-- OVERLAY -->
@@ -112,7 +121,7 @@ const showTopics = ref(false)
               </button>
 
               <button
-                @click="scrollToForm"
+                @click="requestScrollForm"
                 class="flex items-center gap-2
                        text-red-400 hover:text-red-300 transition"
               >
@@ -194,7 +203,7 @@ const showTopics = ref(false)
         </p>
 
         <button
-          @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
+          @click="scrollToTop"
           class="flex items-center gap-2 text-slate-300 hover:text-white transition"
         >
           <ArrowUp class="w-4 h-4" />

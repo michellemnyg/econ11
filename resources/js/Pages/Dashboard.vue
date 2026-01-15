@@ -104,7 +104,7 @@ onMounted(() => {
           backgroundColor: '#0f172a',
           titleColor: '#ffffff',
           bodyColor: '#ffffff',
-          displayColors: false, // ⬅️ INI KUNCINYA
+          displayColors: false,
           callbacks: {
             title: (items) => items[0].label,
             label: (item) => `Jumlah Konsultasi: ${item.raw}`,

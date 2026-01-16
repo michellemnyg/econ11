@@ -22,23 +22,42 @@ const submit = () => {
 <template>
   <Head title="Login | econ11" />
 
+  <!-- BACKGROUND NETRAL -->
   <div class="min-h-screen flex items-center justify-center bg-slate-100 px-4">
     <div
       class="w-full max-w-md bg-white rounded-2xl shadow-lg border border-slate-200 p-6 sm:p-8"
     >
       <!-- HEADER -->
-      <div class="flex flex-col items-center mb-6">
-        <img
-          src="https://asndigital.bkn.go.id/images/logo-bkn.png"
-          alt="Logo BKN"
-          class="h-16 mb-4"
-        />
+      <div class="flex flex-col items-center mb-4">
+        <!-- LOGO BKN + econ11 -->
+        <div class="flex items-center gap-4 mb-6">
+          <img
+            src="https://asndigital.bkn.go.id/images/logo-bkn.png"
+            alt="Logo BKN"
+            class="h-14"
+          />
 
-        <h1 class="text-2xl font-bold text-slate-900">
-          econ11
-        </h1>
+          <!-- PEMISAH HALUS -->
+          <div class="h-9 w-px bg-slate-300"></div>
 
-        <p class="text-sm text-slate-500 text-center mt-1">
+          <!-- LOGO econ11 -->
+          <div
+            class="group flex items-center gap-2 text-xl font-bold tracking-wide"
+          >
+            <span
+              class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm"
+            >
+              e
+            </span>
+            <span
+              class="text-slate-700 transition-colors duration-200 group-hover:text-red-600"
+            >
+              con11
+            </span>
+          </div>
+        </div>
+
+        <p class="text-sm text-slate-500 text-center">
           Sistem Admin Konsultasi ASN
         </p>
       </div>
@@ -104,7 +123,7 @@ const submit = () => {
         <button
           type="submit"
           :disabled="form.processing"
-          class="w-full rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 transition disabled:opacity-50"
+          class="w-full rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold py-2 transition disabled:opacity-50"
         >
           Masuk
         </button>

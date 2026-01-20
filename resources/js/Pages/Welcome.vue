@@ -70,8 +70,27 @@ function submitForm() {
   })
 
   alert('Permintaan konsultasi berhasil dikirim (dummy)')
+
+  resetForm()
 }
 
+function resetForm() {
+  nip.value = ''
+  asn.value = null
+  nipError.value = ''
+
+  form.value = {
+    topik: '',
+    deskripsi: '',
+    tanggal: '',
+    sesi: '',
+    email: '',
+    hp: '',
+    captchaInput: '',
+  }
+
+  captcha.value = generateCaptcha()
+}
 
 const formSection = ref(null)
 

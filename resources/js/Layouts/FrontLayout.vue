@@ -39,7 +39,7 @@ const showTopics = ref(false)
     <!-- HEADER / HERO -->
     <header
       class="relative min-h-screen bg-cover bg-center
-      pb-24 sm:pb-0"
+      pb-24 sm:pb-24 lg:pb-24"
       style="background-image: url('https://i.ibb.co.com/N2zYq8Zg/kantor1.jpg')"
     >
       <!-- OVERLAY -->
@@ -91,14 +91,14 @@ const showTopics = ref(false)
       >
         <div
           class="w-full transition-all duration-500
-         flex flex-col items-center
-         lg:grid lg:items-center"
-  :class="showForm ? 'lg:grid-cols-2 lg:gap-12' : 'lg:grid-cols-1 lg:justify-items-center'"
+            flex flex-col items-center
+            lg:grid lg:items-center"
+:class="showForm ? 'lg:grid-cols-2 lg:gap-12' : 'lg:grid-cols-1 lg:justify-items-center'"
         >
           <!-- LEFT -->
           <div
             class="text-white text-left transition-all duration-500"
-             :class="showForm
+            :class="showForm
                 ? 'hidden lg:block lg:justify-self-start'
                 : 'block max-w-xl'"
           >
@@ -235,7 +235,7 @@ const showTopics = ref(false)
     </header>
 
     <!-- FOOTER -->
-    <footer class="bg-slate-800 text-slate-300 text-sm py-6">
+    <footer class="mt20 bg-slate-800 text-slate-300 text-sm py-6">
     <div
         class="max-w-7xl mx-auto px-6
             flex flex-col gap-4

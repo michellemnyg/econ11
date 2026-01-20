@@ -20,11 +20,9 @@ const topics = [
   {title: 'Manajemen PPPK', desc: 'Pengelolaan Pegawai Pemerintah dengan Perjanjian Kerja'},
 ]
 
-const emit = defineEmits(['scroll-form'])
+const activeTopic = ref(null)
 
-const requestScrollForm = () => {
-  emit('scroll-form')
-}
+const showForm = ref(false)
 
 const scrollToTop = () => {
   window.scrollTo({
@@ -92,13 +90,17 @@ const showTopics = ref(false)
                flex items-center"
       >
         <div
-          class="grid w-full items-center transition-all duration-500"
-          :class="showTopics ? 'lg:grid-cols-2 gap-12' : 'lg:grid-cols-1 justify-items-center'"
+          class="w-full transition-all duration-500
+         flex flex-col items-center
+         lg:grid lg:items-center"
+  :class="showForm ? 'lg:grid-cols-2 lg:gap-12' : 'lg:grid-cols-1 lg:justify-items-center'"
         >
           <!-- LEFT -->
           <div
             class="text-white text-left transition-all duration-500"
-            :class="showTopics ? 'justify-self-start' : 'max-w-xl'"
+             :class="showForm
+                ? 'hidden lg:block lg:justify-self-start'
+                : 'block max-w-xl'"
           >
             <h1 class="text-4xl lg:text-5xl font-bold leading-tight">
               Konsultasi Kepegawaian
@@ -121,7 +123,7 @@ const showTopics = ref(false)
               </button>
 
               <button
-                @click="requestScrollForm"
+                @click="showForm = true"
                 class="flex items-center gap-2
                        text-red-400 hover:text-red-300 transition"
               >
@@ -133,67 +135,104 @@ const showTopics = ref(false)
             </div>
           </div>
 
-          <!-- MODAL TOPIK -->
+        <!-- INLINE FORM (KANAN) -->
         <div
-        v-if="showTopics"
-        class="relative transition-all duration-500 pt-10"
+        v-show="showForm"
+        class="
+            relative
+            w-full
+            max-w-md
+            mx-auto
+            bg-white
+            rounded-xl
+            p-6
+            shadow-xl
+            transition-all duration-300 ease-out
+            lg:justify-self-end
+            lg:max-w-xl
+            animate-fade-slide
+        "
         >
-        <!-- CLOSE BUTTON (CENTER TOP) -->
-        <button
-            @click="showTopics = false"
-            aria-label="Tutup"
-            class="absolute top-0 left-1/2
-                -translate-x-1/2 -translate-y-1/2
-                w-9 h-9
+
+        <!-- SLOT FORM (TIDAK DI-DESTROY) -->
+        <div>
+          <slot name="form" />
+        </div>
+
+        <Teleport to="body">
+        <div
+            v-if="showTopics"
+            class="fixed inset-0 z-50
                 flex items-center justify-center
-                rounded-lg
-                bg-white
-                text-black
-                shadow
-                hover:text-red-500 transition"
+                bg-black/50 px-4"
         >
-            ✕
-        </button>
-
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
-            <div
-            v-for="topic in topics"
-            :key="topic.title"
-            class="group cursor-pointer
-                    bg-white text-blue-600
-                    rounded-xl
-                    px-4 py-3
-                    flex items-center justify-center text-center
-                    transition-all duration-300
-                    hover:scale-110 hover:bg-blue-500 hover:text-white"
+          <div
+            class="
+            relative
+            w-full
+            max-w-5xl
+            bg-transparent
+            "
+        >
+            <!-- MODAL TOPIK -->
+             <div
+            v-if="showTopics"
+            class="relative transition-all duration-500 pt-10"
             >
-            <div>
-                <p class="font-semibold text-sm leading-snug">
-                {{ topic.title }}
-                </p>
+            <!-- CLOSE BUTTON (CENTER TOP) -->
+            <button
+                @click="showTopics = false"
+                aria-label="Tutup"
+                class="absolute top-0 left-1/2
+                    -translate-x-1/2 -translate-y-1/2
+                    w-9 h-9
+                    flex items-center justify-center
+                    rounded-lg
+                    bg-white
+                    text-black
+                    shadow
+                    hover:text-red-500 transition"
+            >
+                ✕
+            </button>
 
-                <p
-                class="mt-2 text-xs text-blue-100
-                        opacity-0 max-h-0 overflow-hidden
-                        group-hover:opacity-100 group-hover:max-h-32
-                        transition-all duration-300"
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
+                <div
+                v-for="topic in topics"
+                :key="topic.title"
+                @click="activeTopic = activeTopic === topic.title ? null : topic.title"
+                class="group cursor-pointer
+                        bg-white text-blue-600
+                        rounded-xl
+                        px-4 py-3
+                        flex items-center justify-center text-center
+                        transition-all duration-300
+                        hover:scale-110 hover:bg-blue-500 hover:text-white"
                 >
-                {{ topic.desc }}
-                </p>
+                <div>
+                    <p class="font-semibold text-sm leading-snug">
+                    {{ topic.title }}
+                    </p>
+
+                    <p
+                    class="mt-2 text-xs text-blue-100
+                            opacity-0 max-h-0 overflow-hidden
+                            group-hover:opacity-100 group-hover:max-h-32
+                            transition-all duration-300"
+                    >
+                    {{ topic.desc }}
+                    </p>
+                </div>
+                </div>
             </div>
             </div>
         </div>
+        </div>
+        </Teleport>
         </div>
         </div>
       </div>
     </header>
-
-    <!-- MAIN -->
-    <main class="flex-1">
-      <div class="max-w-7xl mx-auto px-6 py-16">
-        <slot name="form"/>
-      </div>
-    </main>
 
     <!-- FOOTER -->
     <footer class="bg-slate-800 text-slate-300 text-sm py-6">

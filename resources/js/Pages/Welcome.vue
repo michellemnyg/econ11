@@ -97,9 +97,9 @@ function refreshCaptcha() {
   <FrontLayout @scroll-form="scrollToForm">
     <!-- FORM -->
     <template #form>
-      <div ref="formSection" class="w-full flex justify-center">
-        <div class="w-full max-w-xl lg:max-w-2xl">
-          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+      <div ref="formSection" class="w-full flex justify-center items-start sm:items-center">
+        <div class="w-full max-w-md sm:max-w-lg">
+          <div class="bg-white/95 backdrop-blur-sm rounded-2xl border border-slate-200 p-6 sm:p-8 relative">
 
             <!-- HEADER -->
             <div class="mb-6 text-center sm:text-left">
@@ -233,7 +233,7 @@ function refreshCaptcha() {
                   <button
                     @click="refreshCaptcha"
                     type="button"
-                    class="text-blue-600 hover:text-blue-800"
+                    class="text-red-600 hover:text-red-800"
                   >
                     <RefreshCcw class="w-4 h-4" />
                   </button>
@@ -249,7 +249,7 @@ function refreshCaptcha() {
               <!-- SUBMIT -->
               <button
                 @click="submitForm"
-                class="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2.5 rounded-xl"
+                class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 rounded-xl"
               >
                 Submit Request
               </button>

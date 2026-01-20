@@ -24,6 +24,7 @@ const submit = () => {
 
   <!-- BACKGROUND NETRAL -->
   <div class="min-h-screen flex items-center justify-center bg-slate-100 px-4">
+    <!-- CARD LOGIN -->
     <div
       class="w-full max-w-md bg-white rounded-2xl shadow-lg border border-slate-200 p-6 sm:p-8"
     >
@@ -123,7 +124,7 @@ const submit = () => {
         <button
           type="submit"
           :disabled="form.processing"
-          class="w-full rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold py-2 transition disabled:opacity-50"
+          class="w-full rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 transition disabled:opacity-50"
         >
           Masuk
         </button>

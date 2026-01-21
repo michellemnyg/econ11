@@ -1,4 +1,5 @@
 <script setup>
+import { Link } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import { ArrowUp, FileText } from 'lucide-vue-next'
 
@@ -49,25 +50,26 @@ const showTopics = ref(false)
       <div class="relative z-20">
         <nav class="max-w-7xl mx-auto px-6 py-6 flex justify-center">
           <div class="flex items-center gap-8">
-            <div
-              class="flex items-center gap-3 cursor-pointer
-                     transition-transform duration-300 hover:scale-[1.03]"
+            <Link
+            href="/"
+            class="flex items-center gap-3 cursor-pointer
+                    transition-transform duration-300 hover:scale-[1.03]"
             >
-              <div
+            <div
                 class="w-12 h-12 rounded-full bg-blue-600
-                       flex items-center justify-center
-                       font-bold text-white text-xl shadow-lg border border-white/10"
-              >
+                    flex items-center justify-center
+                    font-bold text-white text-xl shadow-lg border border-white/10"
+            >
                 e
-              </div>
-              <span
-                class="text-3xl font-bold text-white tracking-tight
-                       transition-colors duration-300
-                       hover:text-red-500"
-              >
-                con11
-              </span>
             </div>
+            <span
+                class="text-3xl font-bold text-white tracking-tight
+                    transition-colors duration-300
+                    hover:text-red-500"
+            >
+                con11
+            </span>
+            </Link>
 
             <div class="h-10 w-[2px] bg-white/30"></div>
 

@@ -5,7 +5,7 @@ import { ref } from 'vue'
 import { Search, RefreshCcw } from 'lucide-vue-next'
 
 /**
- * Dummy database ASN
+ * Dummy ASN
  */
 const dummyASN = [
   {

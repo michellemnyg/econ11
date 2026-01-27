@@ -2,24 +2,7 @@
 import { Link } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import { ArrowUp, FileText } from 'lucide-vue-next'
-
-const topics = [
-  {title: 'Penyusunan dan Penetapan Kebutuhan', desc: 'Penyusunan kebutuhan pegawai berdasarkan Analisis Jabatan (Anjab) dan Analisis Beban Kerja (ABK)'},
-  {title: 'Pengadaan', desc: 'Pengadaan Pegawai Negeri Sipil untuk mengisi formasi yang lowong'},
-  {title: 'Pangkat dan Jabatan', desc: 'Tingkat atau jenjang kedudukan seorang ASN dalam sistem kepegawaian'},
-  {title: 'Pengembangan Karir', desc: 'Perjalanan kemajuan ASN/PNS secara individual dalam jenjang jabatan/kepangkatan'},
-  {title: 'Pola Karir', desc: 'Urutan penempatan dan perpindahan PNS dalam dan antar jabatan secara berkesinambungan'},
-  {title: 'Promosi', desc: 'Promosi berdasarkan prestasi kerja dan senioritas'},
-  {title: 'Mutasi', desc: 'Perubahan status PNS seperti pengangkatan, pemindahan, pemberhentian, dll.'},
-  {title: 'Penilaian Kinerja', desc: 'Perbandingan realisasi kinerja dengan target yang telah ditetapkan'},
-  {title: 'Penggajian dan Tunjangan', desc: 'Informasi hak gaji dan tunjangan ASN'},
-  {title: 'Penghargaan', desc: 'Bentuk penghargaan dan tanda kehormatan ASN'},
-  {title: 'Disiplin', desc: 'Kewajiban dan larangan ASN sesuai peraturan perundang-undangan'},
-  {title: 'Pemberhentian', desc: 'Pemberhentian sebagai ASN atau dari jabatan'},
-  {title: 'Jaminan Pensiun dan Hari Tua', desc: 'Hak pensiun dan jaminan hari tua ASN'},
-  {title: 'Perlindungan', desc: 'Jaminan dan bantuan hukum bagi ASN'},
-  {title: 'Manajemen PPPK', desc: 'Pengelolaan Pegawai Pemerintah dengan Perjanjian Kerja'},
-]
+import { CONSULTATION_TOPICS } from '@/Mocks/consultation-topics.mock'
 
 const activeTopic = ref(null)
 
@@ -200,8 +183,8 @@ const showTopics = ref(false)
 
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-6">
                 <div
-                v-for="topic in topics"
-                :key="topic.title"
+                v-for="topic in CONSULTATION_TOPICS"
+                :key="topic.value"
                 @click="activeTopic = activeTopic === topic.title ? null : topic.title"
                 class="group cursor-pointer
                         bg-white text-blue-600

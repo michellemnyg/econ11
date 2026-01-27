@@ -3,24 +3,19 @@ import FrontLayout from '@/Layouts/FrontLayout.vue'
 import { Head } from '@inertiajs/vue3'
 import { ref } from 'vue'
 import { Search, RefreshCcw } from 'lucide-vue-next'
+import ConsultationFeedbackModal from '@/Components/app/modals/ConsultationFeedbackModal.vue'
 
-/**
- * Dummy ASN
- */
-const dummyASN = [
-  {
-    nip: '198901012019031001',
-    nama: 'Ahmad Fauzi',
-    jabatan: 'Analis Kepegawaian',
-    instansi: 'BKD Provinsi Jawa Tengah',
-  },
-  {
-    nip: '197805102010122002',
-    nama: 'Siti Rahmawati',
-    jabatan: 'Kepala Subbagian',
-    instansi: 'Kementerian Perhubungan',
-  },
-]
+// composables
+import { useCaptcha } from '@/Composables/useCaptcha'
+import { useConsultationFormValidation } from '@/Composables/useConsultationFormValidation'
+import { useConsultationSchedule } from '@/Composables/useConsultationSchedule'
+
+// services
+import { findAsnByNip } from '@/Services/asn.service'
+import { submitConsultation } from '@/Services/consultation.service'
+
+// mocks
+import { CONSULTATION_TOPICS } from '@/Mocks/consultation-topics.mock'
 
 /**
  * State
@@ -28,7 +23,7 @@ const dummyASN = [
 const nip = ref('')
 const asn = ref(null)
 const nipError = ref('')
-const captcha = ref(generateCaptcha())
+const consultationResult = ref(null)
 
 const form = ref({
   topik: '',
@@ -41,43 +36,58 @@ const form = ref({
 })
 
 /**
+ * Composables
+ */
+const { captcha, resetCaptcha, validateCaptcha } = useCaptcha()
+
+const {
+  errors: formErrors,
+  validate,
+  isFormComplete,
+  clearErrors,
+} = useConsultationFormValidation(form)
+
+const { availableSessions } = useConsultationSchedule(form)
+
+/**
+ * Modal state
+ */
+const modalOpen = ref(false)
+const modalType = ref('error')
+
+/**
  * Methods
  */
-function cekNip() {
+async function cekNip() {
   nipError.value = ''
-  asn.value = null
+  asn.value = await findAsnByNip(nip.value)
 
-  const found = dummyASN.find((a) => a.nip === nip.value)
-
-  if (!found) {
+  if (!asn.value) {
     nipError.value = 'NIP tidak ditemukan'
-    return
   }
-
-  asn.value = found
 }
 
-function submitForm() {
-  if (form.value.captchaInput !== captcha.value) {
-    alert('Captcha tidak sesuai')
+async function submitForm() {
+  if (!validate()) return
+
+  if (!validateCaptcha(form.value.captchaInput)) {
+    modalType.value = 'error'
+    modalOpen.value = true
+    resetCaptcha()
+    form.value.captchaInput = ''
     return
   }
 
-  console.log({
-    nip: nip.value,
-    biodata: asn.value,
-    form: form.value,
-  })
-
-  alert('Permintaan konsultasi berhasil dikirim (dummy)')
-
-  resetForm()
+  consultationResult.value = await submitConsultation(form.value)
+  modalType.value = 'success'
+  modalOpen.value = true
 }
 
 function resetForm() {
   nip.value = ''
   asn.value = null
   nipError.value = ''
+  clearErrors()
 
   form.value = {
     topik: '',
@@ -89,24 +99,26 @@ function resetForm() {
     captchaInput: '',
   }
 
-  captcha.value = generateCaptcha()
+  resetCaptcha()
 }
 
+function handleModalClose() {
+  modalOpen.value = false
+
+  if (modalType.value === 'success') {
+    resetForm()
+  } else {
+    resetCaptcha()
+    form.value.captchaInput = ''
+  }
+}
+
+/**
+ * Scroll
+ */
 const formSection = ref(null)
-
 const scrollToForm = () => {
-  formSection.value?.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  })
-}
-
-function generateCaptcha() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase()
-}
-
-function refreshCaptcha() {
-  captcha.value = generateCaptcha()
+  formSection.value?.scrollIntoView({ behavior: 'smooth' })
 }
 </script>
 
@@ -171,16 +183,21 @@ function refreshCaptcha() {
                   Topik Konsultasi
                 </label>
                 <select
-                  v-model="form.topik"
-                  class="w-full mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                v-model="form.topik"
+                class="w-full mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
                 >
-                  <option value="">Pilih topik</option>
-                  <option>Pangkat dan Jabatan</option>
-                  <option>Pengadaan</option>
-                  <option>Pengembangan Karir</option>
-                  <option>Disiplin</option>
-                  <option>Penggajian dan Tunjangan</option>
+                <option value="">Pilih topik</option>
+                <option
+                    v-for="topic in CONSULTATION_TOPICS"
+                    :key="topic.value"
+                    :value="topic.value"
+                >
+                    {{ topic.title }}
+                </option>
                 </select>
+                <p v-if="formErrors.topik" class="text-xs text-red-500 mt-1">
+                {{ formErrors.topik }}
+                </p>
               </div>
 
               <!-- DESKRIPSI -->
@@ -193,6 +210,9 @@ function refreshCaptcha() {
                   rows="3"
                   class="w-full mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
                 ></textarea>
+                <p v-if="formErrors.deskripsi" class="text-xs text-red-500 mt-1">
+                {{ formErrors.deskripsi }}
+                </p>
               </div>
 
               <!-- TANGGAL & SESI -->
@@ -204,8 +224,12 @@ function refreshCaptcha() {
                   <input
                     type="date"
                     v-model="form.tanggal"
+                    :min="new Date().toISOString().slice(0, 10)"
                     class="w-full mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  />
+                    />
+                  <p v-if="formErrors.tanggal" class="text-xs text-red-500 mt-1">
+                    {{ formErrors.tanggal }}
+                  </p>
                 </div>
 
                 <div>
@@ -215,14 +239,20 @@ function refreshCaptcha() {
                   <select
                     v-model="form.sesi"
                     class="w-full mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  >
+                    >
                     <option value="">Pilih sesi</option>
-                    <option>Sesi 1 (09:00 - 09:45)</option>
-                    <option>Sesi 2 (10:00 - 10:45)</option>
-                    <option>Sesi 3 (11:00 - 11:45)</option>
-                    <option>Sesi 4 (14:00 - 14:45)</option>
-                    <option>Sesi 5 (15:00 - 15:45)</option>
-                  </select>
+                    <option
+                        v-for="session in availableSessions"
+                        :key="session.value"
+                        :value="session.value"
+                        :disabled="session.disabled"
+                    >
+                        {{ session.label }}
+                    </option>
+                    </select>
+                  <p v-if="formErrors.sesi" class="text-xs text-red-500 mt-1">
+                    {{ formErrors.sesi }}
+                  </p>
                 </div>
               </div>
 
@@ -234,12 +264,18 @@ function refreshCaptcha() {
                   placeholder="Email"
                   class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
                 />
+                <p v-if="formErrors.email" class="text-xs text-red-500 mt-1">
+                  {{ formErrors.email }}
+                </p>
                 <input
                   v-model="form.hp"
                   type="text"
                   placeholder="Nomor Handphone"
                   class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
                 />
+                <p v-if="formErrors.hp" class="text-xs text-red-500 mt-1">
+                  {{ formErrors.hp }}
+                </p>
               </div>
 
               <!-- CAPTCHA -->
@@ -250,7 +286,7 @@ function refreshCaptcha() {
                     {{ captcha }}
                   </div>
                   <button
-                    @click="refreshCaptcha"
+                    @click="resetCaptcha"
                     type="button"
                     class="text-red-600 hover:text-red-800"
                   >
@@ -262,21 +298,32 @@ function refreshCaptcha() {
                     placeholder="Masukkan captcha"
                     class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
+                  <p v-if="formErrors.captchaInput" class="text-xs text-red-500 mt-1">
+                    {{ formErrors.captchaInput }}
+                  </p>
                 </div>
               </div>
 
               <!-- SUBMIT -->
               <button
                 @click="submitForm"
-                class="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 rounded-xl"
-              >
+                :disabled="!isFormComplete"
+                class="w-full py-2.5 rounded-xl font-medium
+                    bg-red-500 hover:bg-red-600 text-white
+                    disabled:bg-slate-300 disabled:cursor-not-allowed"
+                >
                 Submit Request
-              </button>
+                </button>
             </div>
-
           </div>
         </div>
       </div>
     </template>
   </FrontLayout>
+  <ConsultationFeedbackModal
+    :open="modalOpen"
+    :type="modalType"
+    :data="consultationResult"
+    @close="handleModalClose"
+  />
 </template>

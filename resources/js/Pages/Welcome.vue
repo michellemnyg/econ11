@@ -1,9 +1,13 @@
 <script setup>
 import FrontLayout from '@/Layouts/FrontLayout.vue'
 import { Head } from '@inertiajs/vue3'
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Search, RefreshCcw, Calendar } from 'lucide-vue-next'
 import ConsultationFeedbackModal from '@/Components/app/modals/ConsultationFeedbackModal.vue'
+import ConsultationCalendar from '@/Components/app/calendar/ConsultationCalendar.vue'
+import ConsultationSessionDetailModal from '@/Components/app/modals/ConsultationSessionDetailModal.vue'
+
+import { useCalendarStore } from '@/Stores/useCalendarStore'
 
 // composables
 import { useCaptcha } from '@/Composables/useCaptcha'
@@ -18,12 +22,20 @@ import { submitConsultation } from '@/Services/consultation.service'
 import { CONSULTATION_TOPICS } from '@/Mocks/consultation-topics.mock'
 
 /**
+ * Calendar Store (single source of truth)
+ */
+const { addBookedSession, loadCalendar } = useCalendarStore()
+
+onMounted(loadCalendar)
+
+/**
  * State
  */
 const nip = ref('')
 const asn = ref(null)
 const nipError = ref('')
 const consultationResult = ref(null)
+const isSubmitting = ref(false)
 
 const form = ref({
   topik: '',
@@ -35,9 +47,9 @@ const form = ref({
   captchaInput: '',
 })
 
-import ConsultationCalendar from '@/Components/app/calendar/ConsultationCalendar.vue'
-import ConsultationSessionDetailModal from '@/Components/app/modals/ConsultationSessionDetailModal.vue'
-
+/**
+ * Session modal
+ */
 const selectedSession = ref(null)
 const sessionModalOpen = ref(false)
 
@@ -61,7 +73,7 @@ const {
 const { availableSessions } = useConsultationSchedule(form)
 
 /**
- * Modal state
+ * Feedback modal
  */
 const modalOpen = ref(false)
 const modalType = ref('error')
@@ -79,7 +91,7 @@ async function cekNip() {
 }
 
 async function submitForm() {
-  if (!validate()) return
+  if (!validate() || isSubmitting.value) return
 
   if (!validateCaptcha(form.value.captchaInput)) {
     modalType.value = 'error'
@@ -89,9 +101,28 @@ async function submitForm() {
     return
   }
 
-  consultationResult.value = await submitConsultation(form.value)
-  modalType.value = 'success'
-  modalOpen.value = true
+  isSubmitting.value = true
+
+  try {
+    consultationResult.value = await submitConsultation(form.value)
+
+    addBookedSession({
+      tanggal: form.value.tanggal,
+      sesi: {
+        value: form.value.sesi,
+        label: availableSessions.value.find(
+          s => s.value === form.value.sesi
+        )?.label,
+        narasumber: 'Narasumber A',
+        topik: form.value.topik,
+      },
+    })
+
+    modalType.value = 'success'
+    modalOpen.value = true
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 function resetForm() {
@@ -125,9 +156,10 @@ function handleModalClose() {
 }
 
 /**
- * Scroll
+ * Scroll helpers
  */
 const formSection = ref(null)
+
 const scrollToForm = () => {
   formSection.value?.scrollIntoView({ behavior: 'smooth' })
 }

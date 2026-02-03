@@ -27,15 +27,6 @@ const emit = defineEmits(['close'])
         <ul class="text-sm space-y-2">
           <li><strong>Tanggal:</strong> {{ session?.tanggal }}</li>
           <li><strong>Sesi:</strong> {{ session?.label }}</li>
-          <li><strong>Status:</strong>
-            <span
-              :class="session?.status === 'booked'
-                ? 'text-red-600'
-                : 'text-green-600'"
-            >
-              {{ session?.status }}
-            </span>
-          </li>
           <li v-if="session?.narasumber">
             <strong>Narasumber:</strong> {{ session.narasumber }}
           </li>

@@ -1,7 +1,7 @@
 <script setup>
 import { Link } from '@inertiajs/vue3'
 import { ref } from 'vue'
-import { ArrowUp, FileText } from 'lucide-vue-next'
+import { ArrowUp, FileText, Calendar } from 'lucide-vue-next'
 import { CONSULTATION_TOPICS } from '@/Mocks/consultation-topics.mock'
 
 const activeTopic = ref(null)
@@ -95,28 +95,28 @@ const showTopics = ref(false)
               dalam rangka peningkatan kualitas layanan manajemen ASN
             </p>
 
-            <div class="mt-10 flex items-center gap-6">
-              <button
+            <div class="mt-10 flex flex-col gap-4">
+            <div class="flex items-center gap-6">
+                <button
                 @click="showTopics = true"
-                class="flex items-center gap-2 text-white
-                       hover:text-red-300 transition"
-              >
+                class="flex items-center gap-2 text-white hover:text-red-300 transition"
+                >
                 <FileText class="w-6 h-6" />
                 <span class="text-sm font-medium">
-                  Topik Konsultasi
+                    Topik Konsultasi
                 </span>
-              </button>
+                </button>
 
-              <button
+                <button
                 @click="showForm = true"
-                class="flex items-center gap-2
-                       text-red-400 hover:text-red-300 transition"
-              >
+                class="flex items-center gap-2 text-red-400 hover:text-red-300 transition"
+                >
                 <FileText class="w-6 h-6" />
                 <span class="text-sm font-medium">
-                  Isi Form
+                    Isi Form
                 </span>
-              </button>
+                </button>
+            </div>
             </div>
           </div>
 
@@ -218,6 +218,11 @@ const showTopics = ref(false)
         </div>
       </div>
     </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="bg-slate-50">
+    <slot name="content" />
+    </main>
 
     <!-- FOOTER -->
     <footer class="mt20 bg-slate-800 text-slate-300 text-sm py-6">

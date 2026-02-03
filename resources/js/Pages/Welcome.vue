@@ -2,7 +2,7 @@
 import FrontLayout from '@/Layouts/FrontLayout.vue'
 import { Head } from '@inertiajs/vue3'
 import { ref } from 'vue'
-import { Search, RefreshCcw } from 'lucide-vue-next'
+import { Search, RefreshCcw, Calendar } from 'lucide-vue-next'
 import ConsultationFeedbackModal from '@/Components/app/modals/ConsultationFeedbackModal.vue'
 
 // composables
@@ -34,6 +34,17 @@ const form = ref({
   hp: '',
   captchaInput: '',
 })
+
+import ConsultationCalendar from '@/Components/app/calendar/ConsultationCalendar.vue'
+import ConsultationSessionDetailModal from '@/Components/app/modals/ConsultationSessionDetailModal.vue'
+
+const selectedSession = ref(null)
+const sessionModalOpen = ref(false)
+
+const openSessionDetail = (session) => {
+  selectedSession.value = session
+  sessionModalOpen.value = true
+}
 
 /**
  * Composables
@@ -120,13 +131,24 @@ const formSection = ref(null)
 const scrollToForm = () => {
   formSection.value?.scrollIntoView({ behavior: 'smooth' })
 }
+
+const scrollToCalendar = () => {
+  const el = document.getElementById('calendar')
+  if (!el) return
+
+  el.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start',
+  })
+}
 </script>
 
 <template>
   <Head title="e con - Konsultasi Online" />
 
   <FrontLayout @scroll-form="scrollToForm">
-    <!-- FORM -->
+
+    <!-- ================= FORM ================= -->
     <template #form>
       <div ref="formSection" class="w-full flex justify-center items-start sm:items-center">
         <div class="w-full max-w-md sm:max-w-lg">
@@ -149,7 +171,7 @@ const scrollToForm = () => {
                 <input
                   v-model="nip"
                   type="text"
-                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   placeholder="Masukkan NIP"
                 />
                 <button
@@ -177,26 +199,22 @@ const scrollToForm = () => {
 
             <!-- FORM LANJUTAN -->
             <div v-if="asn" class="mt-6 space-y-4">
+
               <!-- TOPIK -->
               <div>
-                <label class="text-sm font-medium text-slate-700">
-                  Topik Konsultasi
-                </label>
-                <select
-                v-model="form.topik"
-                class="w-full mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                >
-                <option value="">Pilih topik</option>
-                <option
+                <label class="text-sm font-medium text-slate-700">Topik Konsultasi</label>
+                <select v-model="form.topik" class="w-full mt-1 rounded-lg border px-3 py-2 text-sm">
+                  <option value="">Pilih topik</option>
+                  <option
                     v-for="topic in CONSULTATION_TOPICS"
                     :key="topic.value"
                     :value="topic.value"
-                >
+                  >
                     {{ topic.title }}
-                </option>
+                  </option>
                 </select>
                 <p v-if="formErrors.topik" class="text-xs text-red-500 mt-1">
-                {{ formErrors.topik }}
+                  {{ formErrors.topik }}
                 </p>
               </div>
 
@@ -208,51 +226,48 @@ const scrollToForm = () => {
                 <textarea
                   v-model="form.deskripsi"
                   rows="3"
-                  class="w-full mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                ></textarea>
-                <p v-if="formErrors.deskripsi" class="text-xs text-red-500 mt-1">
-                {{ formErrors.deskripsi }}
-                </p>
+                  class="w-full mt-1 rounded-lg border px-3 py-2 text-sm"
+                />
               </div>
 
               <!-- TANGGAL & SESI -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label class="text-sm font-medium text-slate-700">
-                    Tanggal Konsultasi
-                  </label>
+                  <label class="text-sm font-medium text-slate-700">Tanggal</label>
                   <input
                     type="date"
                     v-model="form.tanggal"
                     :min="new Date().toISOString().slice(0, 10)"
-                    class="w-full mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    />
-                  <p v-if="formErrors.tanggal" class="text-xs text-red-500 mt-1">
-                    {{ formErrors.tanggal }}
-                  </p>
+                    class="w-full mt-1 rounded-lg border px-3 py-2 text-sm"
+                  />
                 </div>
 
                 <div>
-                  <label class="text-sm font-medium text-slate-700">
-                    Sesi
-                  </label>
+                  <label class="text-sm font-medium text-slate-700">Sesi</label>
                   <select
                     v-model="form.sesi"
-                    class="w-full mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    >
+                    class="w-full mt-1 rounded-lg border px-3 py-2 text-sm"
+                  >
                     <option value="">Pilih sesi</option>
                     <option
-                        v-for="session in availableSessions"
-                        :key="session.value"
-                        :value="session.value"
-                        :disabled="session.disabled"
+                      v-for="session in availableSessions"
+                      :key="session.value"
+                      :value="session.value"
+                      :disabled="session.disabled"
                     >
-                        {{ session.label }}
+                      {{ session.label }}
                     </option>
-                    </select>
-                  <p v-if="formErrors.sesi" class="text-xs text-red-500 mt-1">
-                    {{ formErrors.sesi }}
-                  </p>
+                  </select>
+
+                  <!-- BUTTON KE KALENDAR -->
+                  <button
+                    type="button"
+                    @click="scrollToCalendar"
+                    class="mt-2 text-xs text-red-600 hover:text-red-800 flex items-center gap-1"
+                  >
+                    <Calendar class="w-4 h-4" />
+                    Lihat sesi yang masih tersedia
+                  </button>
                 </div>
               </div>
 
@@ -308,22 +323,38 @@ const scrollToForm = () => {
               <button
                 @click="submitForm"
                 :disabled="!isFormComplete"
-                class="w-full py-2.5 rounded-xl font-medium
-                    bg-red-500 hover:bg-red-600 text-white
-                    disabled:bg-slate-300 disabled:cursor-not-allowed"
-                >
+                class="w-full py-2.5 rounded-xl bg-red-500 text-white disabled:bg-slate-300"
+              >
                 Submit Request
-                </button>
+              </button>
             </div>
           </div>
         </div>
       </div>
     </template>
+
+    <!-- ================= MAIN CONTENT / CALENDAR ================= -->
+    <template #content>
+      <section ref="calendarSection" class="max-w-7xl mx-auto px-6">
+        <ConsultationCalendar
+          @select-session="openSessionDetail"
+        />
+      </section>
+    </template>
+
   </FrontLayout>
+
+  <!-- MODALS -->
   <ConsultationFeedbackModal
     :open="modalOpen"
     :type="modalType"
     :data="consultationResult"
     @close="handleModalClose"
+  />
+
+  <ConsultationSessionDetailModal
+    :open="sessionModalOpen"
+    :session="selectedSession"
+    @close="sessionModalOpen = false"
   />
 </template>

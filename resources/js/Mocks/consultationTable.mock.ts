@@ -102,7 +102,7 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     nip: 197912302005011003,
     nama: 'Rina Kurniasih',
     instansi: 'BKD Kota Bandung',
-    topik: 'Mutasi dan Rotasi',
+    topik: 'Penggajian dan Tunjangan',
 
     deskripsiMasalah: 'Konsultasi terkait proses kenaikan pangkat dan penyesuaian jabatan struktural.',
 
@@ -126,7 +126,7 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     nip: 197912302005011003,
     nama: 'Rina Kurniasih',
     instansi: 'BKD Kota Bandung',
-    topik: 'Mutasi dan Rotasi',
+    topik: 'Penilaian Kinerja',
 
     deskripsiMasalah: 'Konsultasi terkait proses kenaikan pangkat dan penyesuaian jabatan struktural.',
 
@@ -150,7 +150,7 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     nip: 197912302005011003,
     nama: 'Rina Kurniasih',
     instansi: 'BKD Kota Bandung',
-    topik: 'Mutasi dan Rotasi',
+    topik: 'Pangkat dan Jabatan',
 
     deskripsiMasalah: 'Konsultasi terkait proses kenaikan pangkat dan penyesuaian jabatan struktural.',
 
@@ -174,7 +174,7 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     nip: 197912302005011003,
     nama: 'Rina Kurniasih',
     instansi: 'BKD Kota Bandung',
-    topik: 'Mutasi dan Rotasi',
+    topik: 'Pengadaan',
 
     deskripsiMasalah: 'Konsultasi terkait proses kenaikan pangkat dan penyesuaian jabatan struktural.',
 
@@ -198,7 +198,7 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     nip: 198112122008121001,
     nama: 'Budi',
     instansi: 'Pemprov Jawa Timur',
-    topik: 'Disiplin',
+    topik: 'Promosi',
 
     deskripsiMasalah: 'Konsultasi terkait proses kenaikan pangkat dan penyesuaian jabatan struktural.',
 
@@ -222,7 +222,7 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     nip: 198112122008121001,
     nama: 'Budi Santoso',
     instansi: 'Pemprov Jawa Timur',
-    topik: 'Disiplin',
+    topik: 'Mutasi',
 
     deskripsiMasalah: 'Konsultasi terkait proses kenaikan pangkat dan penyesuaian jabatan struktural.',
 
@@ -246,7 +246,7 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     nip: 198112122008121001,
     nama: 'Santoso',
     instansi: 'Pemprov Jawa Timur',
-    topik: 'Disiplin',
+    topik: 'Pengembangan Karir',
 
     deskripsiMasalah: 'Konsultasi terkait proses kenaikan pangkat dan penyesuaian jabatan struktural.',
 

@@ -16,6 +16,9 @@ import { Button } from '@/Components/ui/button'
 import { Badge } from '@/Components/ui/badge'
 import ConsultationStatusBadge from '@/Components/ConsultationStatusBadge.vue'
 
+// Import Mock Topics untuk referensi pencocokan
+import { CONSULTATION_TOPICS } from '@/Mocks/consultation-topics.mock'
+
 const props = defineProps({
   data: { type: Array, required: true },
   isLoading: { type: Boolean, default: false },
@@ -39,22 +42,58 @@ const emit = defineEmits([
   'copy-link'
 ])
 
-// --- LOGIC PEWARNAAN TOPIK ---
-// Anda bisa sesuaikan key ini dengan data real dari DB Anda
-const getTopicColor = (topicName) => {
-  const t = topicName?.toLowerCase() || ''
+/* =========================================
+   LOGIC PEWARNAAN TOPIK (DARI MOCKS)
+   ========================================= */
+const getTopicColor = (topicInput) => {
+  if (!topicInput) return 'bg-slate-50 text-slate-600 border-slate-200'
 
-  if (t.includes('kepegawaian') || t.includes('hukum') || t.includes('disiplin')) {
-    // Aksen MERAH (Sesuai request)
+  // 1. Normalisasi Input (Bisa berupa Title 'Disiplin' atau Value 'disiplin')
+  const inputLower = topicInput.toLowerCase()
+
+  // 2. Cari 'value' asli dari Mock berdasarkan input (Title atau Value match)
+  const matchedTopic = CONSULTATION_TOPICS.find(
+    t => t.value.toLowerCase() === inputLower || t.title.toLowerCase() === inputLower
+  )
+
+  // Jika tidak ketemu di mock, gunakan input apa adanya
+  const key = matchedTopic ? matchedTopic.value : inputLower
+
+  // 3. Definisi Kategori Warna
+
+  // KELOMPOK MERAH (Critical, Hukum, Sanksi, Perubahan Status Sensitif)
+  const redGroup = [
+    'disiplin',
+    'pemberhentian',
+    'perlindungan', // Bantuan Hukum
+    'mutasi'        // Seringkali urgent/sensitif
+  ]
+
+  // KELOMPOK BIRU (Karir, Prestasi, Progress)
+  const blueGroup = [
+    'promosi',
+    'pengembangan_karir',
+    'pola_karir',
+    'pangkat_jabatan',
+    'penilaian_kinerja',
+    'pengadaan'
+  ]
+
+  // KELOMPOK ABU-ABU (Administratif, Hak, Rutin - Default)
+  // Sisanya: penyusunan_kebutuhan, penggajian_tunjangan, penghargaan,
+  // jaminan_pensiun, manajemen_pppk
+
+  // 4. Return Styles
+  if (redGroup.includes(key)) {
     return 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
-  } else if (t.includes('infrastruktur') || t.includes('jaringan') || t.includes('server')) {
-    return 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
-  } else if (t.includes('aplikasi') || t.includes('sistem')) {
-    return 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-  } else {
-    // Default
-    return 'bg-slate-50 text-slate-600 border-slate-200'
   }
+
+  if (blueGroup.includes(key)) {
+    return 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
+  }
+
+  // Default (Abu-abu)
+  return 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
 }
 </script>
 

@@ -237,4 +237,28 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
 
     createdAt: '2026-02-05T08:10:00Z',
   },
+
+    {
+    id: 9,
+    tanggal: '2026-02-12',
+    sesi: 'Sesi 5 (15:00 - 15:45)',
+
+    nip: 198112122008121001,
+    nama: 'Santoso',
+    instansi: 'Pemprov Jawa Timur',
+    topik: 'Disiplin',
+
+    deskripsiMasalah: 'Konsultasi terkait proses kenaikan pangkat dan penyesuaian jabatan struktural.',
+
+    petugas: 'Narasumber A',
+
+    integrasi: {
+      meetingId: null,
+      linkZoom: null,
+      passcode: null,
+      createdAt: null,
+    },
+
+    createdAt: '2026-02-05T08:10:00Z',
+  },
 ]

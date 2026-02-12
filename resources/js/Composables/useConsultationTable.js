@@ -80,15 +80,37 @@ export function useConsultationTable(source) {
     })
   })
 
-  /* ======================
+/* ======================
      SORT (DOMAIN RULE)
-     tanggal ASC → session start ASC
+     1. Tanggal (Asc)
+     2. Status (Yang 'berlalu' pindah ke bawah)
+     3. Jam Sesi (Asc)
   ====================== */
   const sortedData = computed(() => {
     return [...filteredData.value].sort((a, b) => {
-      const dateA = `${a.tanggal} ${a.sessionTime?.start ?? '00:00'}`
-      const dateB = `${b.tanggal} ${b.sessionTime?.start ?? '00:00'}`
-      return dateA.localeCompare(dateB)
+      // --- 1. PRIORITAS UTAMA: TANGGAL ---
+      // Jika tanggal berbeda, urutkan berdasarkan tanggal (Awal ke Akhir)
+      if (a.tanggal !== b.tanggal) {
+        return a.tanggal.localeCompare(b.tanggal)
+      }
+
+      // --- 2. PRIORITAS KEDUA: SESI BERLALU DI BAWAH ---
+      // Jika tanggal sama, kita cek statusnya
+      const isPassedA = a.status === 'berlalu'
+      const isPassedB = b.status === 'berlalu'
+
+      // Jika A 'berlalu' tapi B tidak -> A turun ke bawah (return 1)
+      if (isPassedA && !isPassedB) return 1
+      // Jika B 'berlalu' tapi A tidak -> A naik ke atas (return -1)
+      if (!isPassedA && isPassedB) return -1
+
+      // --- 3. PRIORITAS KETIGA: JAM SESI ---
+      // Jika statusnya setara (sama-sama 'berlalu' atau sama-sama belum),
+      // urutkan dari jam pagi ke sore
+      const timeA = a.sessionTime?.start ?? '00:00'
+      const timeB = b.sessionTime?.start ?? '00:00'
+
+      return timeA.localeCompare(timeB)
     })
   })
 

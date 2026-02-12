@@ -192,7 +192,7 @@ const scrollToCalendar = () => {
                 FORM KONSULTASI
               </h3>
               <p class="text-sm text-slate-500 mt-1">
-                Silahkan input NIP dan form untuk mendapatkan link dan jadwal konsultasi.
+                Silahkan input NIP, nama anda, dan form untuk mendapatkan link dan jadwal konsultasi.
               </p>
             </div>
 

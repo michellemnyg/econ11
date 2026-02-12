@@ -1,8 +1,19 @@
-import { CONSULTATION_RESULT_MOCK } from '@/Mocks/consultation.mock'
-import { CONSULTATION_BOOKINGS_MOCK } from '@/Mocks/consultationBookings.mock'
+import {
+  CONSULTATION_RESULT_MOCK,
+} from '@/Mocks/consultation.mock'
 
+import {
+  CONSULTATION_BOOKINGS_MOCK,
+} from '@/Mocks/consultationBookings.mock'
+
+import {
+  CONSULTATION_TABLE_MOCK,
+} from '@/Mocks/consultationTable.mock'
+
+/* ============================
+   WRITE (BOOKING / SUBMIT)
+============================ */
 export async function submitConsultation(form) {
-  // Simpan booking (mock)
   CONSULTATION_BOOKINGS_MOCK.push({
     date: form.tanggal,
     session: form.sesi,
@@ -18,4 +29,20 @@ export async function submitConsultation(form) {
       sesi: form.sesi,
     },
   }
+}
+
+/* ============================
+   READ (CLIENT TABLE)
+============================ */
+export async function fetchConsultations(params = {}) {
+  /**
+   * params nanti:
+   * - page
+   * - perPage
+   * - search
+   * - sortBy
+   * - sortDirection
+   * - dateFrom / dateTo
+   */
+  return CONSULTATION_TABLE_MOCK
 }

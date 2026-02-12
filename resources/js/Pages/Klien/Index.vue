@@ -1,196 +1,93 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { Head } from '@inertiajs/vue3'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import {
   UserPlus,
   Link as LinkIcon,
   Eye,
-  Search,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
-  ChevronDown,
+  Ban,
 } from 'lucide-vue-next'
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/Components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog'
 import { Button } from '@/Components/ui/button'
-import { Input } from '@/Components/ui/input'
 import { Badge } from '@/Components/ui/badge'
-import { Select, SelectItem } from '@/Components/ui/select'
+
+import { CONSULTATION_TABLE_MOCK as consultationsMock } from '@/Mocks/consultationTable.mock'
+import { narasumberMock } from '@/Mocks/narasumber.mock'
+import { useConsultationTable } from '@/Composables/useConsultationTable'
+import ConsultationStatusBadge from '@/Components/ConsultationStatusBadge.vue'
+import { useClipboardToast } from '@/Composables/useClipboardToast'
+import ConsultationFilterBar from '@/Components/ConsultationFilterBar.vue'
+import ConsultationPeriodModal from '@/Components/ConsultationPeriodModal.vue'
+import ConsultationAdvancedFilter from '@/Components/ConsultationAdvancedFilter.vue'
+
+const { copy, toastMessage, showToast } = useClipboardToast()
 
 /* ======================
-   ROLE (dummy)
+   TABLE SOURCE
 ====================== */
-const role = 'operator' // operator | ketua_tim | narasumber
+const klienList = ref(consultationsMock)
 
 /* ======================
-   FILTER STATE
+   TABLE LOGIC (SINGLE SOURCE OF TRUTH)
 ====================== */
-const search = ref('')
-const filterSesi = ref('all')
-const filterTanggal = ref('2026-01-14')
-const sortBy = ref('sesi') // sesi | nama | instansi | topik
-const sortDirection = ref('asc') // asc | desc
+const table = useConsultationTable(klienList)
+
+const {
+  // Data
+  paginatedData,
+
+  // Pagination
+  totalPages,
+  currentPage,
+  perPage,
+
+  // Filters
+  search,
+  periodMode,
+  startDate,
+  endDate,
+  filterInstansi,
+  filterStatus,
+  instansiOptions,
+} = table
 
 /* ======================
-   PAGINATION
+   LOCAL UI STATE
 ====================== */
-const currentPage = ref(1)
-const perPage = 5
+const filterTanggal = ref('')
+
+const showPeriodModal = ref(false)
+const showAdvancedFilter = ref(false)
 
 /* ======================
-   DUMMY DATA
+   PERIOD APPLY
 ====================== */
-const klienList = ref([
-  {
-    id: 1,
-    tanggal: '2026-01-14',
-    sesi: 'Sesi 1 (09:00 - 09:45)',
-    nip: '198901012019031001',
-    nama: 'Ahmad Fauzi',
-    instansi: 'BKD Provinsi Jawa Tengah',
-    topik: 'Pangkat dan Jabatan',
-    petugas: null,
-    linkZoom: null,
-    meetingId: null,
-    passcode: null,
-    deskripsi: null,
-  },
-  {
-    id: 2,
-    tanggal: '2026-01-14',
-    sesi: 'Sesi 3 (11:00 - 11:45)',
-    nip: '197805102010122002',
-    nama: 'Siti Rahmawati',
-    instansi: 'Kemenhub',
-    topik: 'Pengembangan Karir',
-    petugas: 'Narasumber B',
-    linkZoom: 'https://zoom.us/j/123456789',
-    meetingId: '123 456 7890',
-    passcode: 'econ11',
-    deskripsi:
-      'Konsultasi terkait persyaratan kenaikan pangkat dari golongan III/c ke III/d. Membutuhkan penjelasan mengenai dokumen yang diperlukan.',
-  },
-  {
-    id: 3,
-    tanggal: '2026-01-14',
-    sesi: 'Sesi 2 (10:00 - 10:45)',
-    nip: '198112122008121001',
-    nama: 'Budi Santoso',
-    instansi: 'Pemprov Jawa Timur',
-    topik: 'Disiplin',
-    petugas: 'Narasumber A',
-    linkZoom: null,
-    meetingId: null,
-    passcode: null,
-    deskripsi: null,
-  },
-])
+function applyPeriod({ start, end }) {
+  periodMode.value = start && end ? 'range' : 'default'
+  startDate.value = start
+  endDate.value = end
 
-const narasumberList = ref([
-  { nama: 'Narasumber A', unit: 'Manajemen ASN' },
-  { nama: 'Narasumber B', unit: 'Pengembangan Karir' },
-  { nama: 'Narasumber C', unit: 'Pengadaan' },
-])
+  filterTanggal.value = ''
 
-/* ======================
-   FILTERED DATA
-====================== */
-const filteredData = computed(() => {
-  return klienList.value.filter((k) => {
-    const matchSearch =
-      k.nama.toLowerCase().includes(search.value.toLowerCase()) ||
-      k.nip.includes(search.value) ||
-      k.instansi.toLowerCase().includes(search.value.toLowerCase())
-
-    const matchSesi =
-      filterSesi.value === 'all' || k.sesi.includes(filterSesi.value)
-
-    const matchTanggal = k.tanggal === filterTanggal.value
-
-    return matchSearch && matchSesi && matchTanggal
-  })
-})
-
-const totalPages = computed(() =>
-  Math.ceil(filteredData.value.length / perPage)
-)
-
-/* ======================
-   SORTING
-====================== */
-const extractSesiNumber = (sesi) => {
-  const match = sesi.match(/Sesi\s(\d+)/)
-  return match ? Number(match[1]) : 0
+  showPeriodModal.value = false
 }
 
-const sortedData = computed(() => {
-  return [...filteredData.value].sort((a, b) => {
-    let valA = ''
-    let valB = ''
-
-    switch (sortBy.value) {
-      case 'nama':
-        valA = a.nama.toLowerCase()
-        valB = b.nama.toLowerCase()
-        break
-
-      case 'instansi':
-        valA = a.instansi.toLowerCase()
-        valB = b.instansi.toLowerCase()
-        break
-
-      case 'topik':
-        valA = a.topik.toLowerCase()
-        valB = b.topik.toLowerCase()
-        break
-
-      case 'sesi':
-      default:
-        valA = extractSesiNumber(a.sesi)
-        valB = extractSesiNumber(b.sesi)
-        break
-    }
-
-    if (valA < valB) return sortDirection.value === 'asc' ? -1 : 1
-    if (valA > valB) return sortDirection.value === 'asc' ? 1 : -1
-    return 0
-  })
-})
-
 /* ======================
-   PAGINATED DATA
+   ADVANCED FILTER APPLY
 ====================== */
-const paginatedData = computed(() => {
-  const start = (currentPage.value - 1) * perPage
-  return sortedData.value.slice(start, start + perPage)
-})
+function applyAdvancedFilter({ instansi, status }) {
+  filterInstansi.value = instansi
+  filterStatus.value = status
 
-/* ======================
-   SORT HANDLER (HEADER CLICK)
-====================== */
-const handleSort = (field) => {
-  if (sortBy.value === field) {
-    sortDirection.value =
-      sortDirection.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortBy.value = field
-    sortDirection.value = 'asc'
-  }
-    currentPage.value = 1
+  showAdvancedFilter.value = false
 }
 
-const isSorted = (field) => sortBy.value === field
-
 /* ======================
-   MODAL STATE
+   MODAL STATE (Lainnya)
 ====================== */
 const showAssignModal = ref(false)
 const showDetailModal = ref(false)
@@ -199,40 +96,56 @@ const searchPetugas = ref('')
 const selectedPetugas = ref(null)
 
 /* ======================
+   PAGINATION UI HELPER
+====================== */
+const pageSizes = [5, 10, 25, 50, 100]
+
+watch(perPage, () => {
+  currentPage.value = 1
+})
+
+const pageStart = computed(() => {
+  return (currentPage.value - 1) * perPage.value + 1
+})
+
+const pageEnd = computed(() => {
+  const end = currentPage.value * perPage.value
+  return end > klienList.value.length ? klienList.value.length : end
+})
+
+/* ======================
    ACTIONS
 ====================== */
-const openAssign = (klien) => {
-  selectedKlien.value = klien
-  selectedPetugas.value = null
-  showAssignModal.value = true
+const openAssign = (row) => {
+    selectedKlien.value = klienList.value.find( k => k.id === row.id )
+    selectedPetugas.value = null
+    showAssignModal.value = true
 }
-
-const openDetail = (klien) => {
-  selectedKlien.value = klien
-  showDetailModal.value = true
+const openDetail = (row) => {
+    selectedKlien.value = klienList.value.find( k => k.id === row.id )
+    showDetailModal.value = true
 }
-
 const assignPetugas = (nama) => {
-  selectedKlien.value.petugas = nama
-  showAssignModal.value = false
+    if (!selectedKlien.value) return
+    selectedKlien.value.petugas = nama
+    showAssignModal.value = false
 }
-
 const copyLink = (link) => {
-  navigator.clipboard.writeText(link)
-  alert('Link Zoom berhasil disalin')
+    if (!link) return
+    copy(link, 'Link Zoom berhasil disalin')
+}
+const copyText = (text) => {
+    if (!text) return
+    copy(text, 'Berhasil disalin')
 }
 
-const copyText = (text) => {
-  if (!text) return
-  navigator.clipboard.writeText(text)
-  alert('Berhasil disalin')
-}
+defineOptions({
+  layout: AdminLayout,
+})
 </script>
 
 <template>
   <Head title="Klien" />
-
-  <AdminLayout>
     <!-- HEADER -->
     <div class="mb-6">
       <h2 class="text-2xl font-bold text-slate-800">
@@ -244,57 +157,36 @@ const copyText = (text) => {
     </div>
 
     <!-- FILTER BAR -->
-    <div
-      class="bg-white border border-slate-200 rounded-xl p-4 mb-4 flex flex-col lg:flex-row gap-3"
-    >
-      <Input
-        v-model="search"
-        placeholder="Cari nama / NIP / instansi..."
-        class="lg:w-1/3"
-      />
+    <ConsultationFilterBar
+    :search="search"
+    @update:search="search = $event"
+    @open-period="showPeriodModal = true"
+    @open-filter="showAdvancedFilter = true"
+    />
 
-      <select
-        v-model="filterSesi"
-        class="rounded-lg border border-slate-300 pl-3 pr-10 py-2 text-sm"
-      >
-        <option value="all">Semua Sesi</option>
-        <option value="Sesi 1">Sesi 1</option>
-        <option value="Sesi 2">Sesi 2</option>
-        <option value="Sesi 3">Sesi 3</option>
-        <option value="Sesi 4">Sesi 4</option>
-        <option value="Sesi 5">Sesi 5</option>
-      </select>
+    <ConsultationPeriodModal
+    v-if="showPeriodModal"
+    :start-date="startDate"
+    :end-date="endDate"
+    @close="showPeriodModal = false"
+    @apply="applyPeriod"
+    />
 
-      <select
-        v-model="sortBy"
-        class="rounded-lg border border-slate-300 pl-3 pr-10 py-2 text-sm"
-        >
-        <option value="sesi">Urutkan: Sesi</option>
-        <option value="nama">Urutkan: Nama</option>
-        <option value="instansi">Urutkan: Instansi</option>
-        <option value="topik">Urutkan: Topik</option>
-      </select>
-
-      <select
-        v-model="sortDirection"
-        class="rounded-lg border border-slate-300 pl-3 pr-10 py-2 text-sm"
-        >
-        <option value="asc">Ascending</option>
-        <option value="desc">Descending</option>
-      </select>
-
-      <input
-        type="date"
-        v-model="filterTanggal"
-        class="rounded-lg border border-slate-300 px-3 py-2 text-sm"
-      />
-    </div>
+    <ConsultationAdvancedFilter
+    v-if="showAdvancedFilter"
+    :instansi-options="instansiOptions"
+    :filter-instansi="filterInstansi"
+    :filter-status="filterStatus"
+    @close="showAdvancedFilter = false"
+    @apply="applyAdvancedFilter"
+    />
 
     <!-- TABLE -->
     <div
-    class="bg-white border border-slate-200 rounded-xl overflow-x-auto shadow-sm"
+    class="bg-white border border-slate-200 rounded-xl shadow-sm relative"
     >
-    <table class="w-full text-sm">
+    <div class="overflow-x-auto">
+    <table class="min-w-[1100px] w-full text-sm">
         <!-- STICKY HEADER -->
         <thead
         class="sticky top-0 z-10
@@ -302,92 +194,16 @@ const copyText = (text) => {
                 text-slate-700 border-b border-slate-200"
         >
         <tr>
-            <th class="px-4 py-3 text-left font-semibold">
-            Tanggal
-            </th>
-
-            <!-- SESI -->
-           <th
-            class="px-4 py-3 text-left font-semibold cursor-pointer
-                    hover:text-blue-700 transition select-none"
-            @click="handleSort('sesi')"
-            >
-            <div class="flex items-center gap-1">
-                Sesi
-
-                <ChevronUp
-                v-if="isSorted('sesi') && sortDirection === 'asc'"
-                class="w-3 h-3 text-blue-600"
-                />
-
-                <ChevronDown
-                v-if="isSorted('sesi') && sortDirection === 'desc'"
-                class="w-3 h-3 text-blue-600"
-                />
-            </div>
-            </th>
-
-            <th class="px-4 py-3 text-left font-semibold">
-            NIP
-            </th>
-
-            <!-- NAMA -->
-            <th
-            class="px-4 py-3 text-left font-semibold cursor-pointer
-                    hover:text-blue-700 transition"
-            @click="handleSort('nama')"
-            >
-            <div class="flex items-center gap-1">
-                Nama
-                <ChevronUp
-                v-if="isSorted('nama') && sortDirection === 'asc'"
-                class="w-3 h-3 text-blue-600"
-                />
-
-                <ChevronDown
-                v-if="isSorted('nama') && sortDirection === 'desc'"
-                class="w-3 h-3 text-blue-600"
-                />
-            </div>
-            </th>
-
-
-            <!-- INSTANSI -->
-            <th
-            class="px-4 py-3 text-left font-semibold cursor-pointer
-                    hover:text-blue-700 transition"
-            @click="handleSort('instansi')"
-            >
-            <div class="flex items-center gap-1">
-            Instansi
-                <ChevronUp
-                v-if="isSorted('instansi') && sortDirection === 'asc'"
-                class="w-3 h-3 text-blue-600"
-                />
-
-                <ChevronDown
-                v-if="isSorted('instansi') && sortDirection === 'desc'"
-                class="w-3 h-3 text-blue-600"
-                />
-            </div>
-            </th>
-
-
-            <th class="px-4 py-3 text-left font-semibold">
-            Topik
-            </th>
-
-            <th class="px-4 py-3 text-left font-semibold">
-            Petugas
-            </th>
-
-            <th class="px-4 py-3 text-left font-semibold">
-            Link
-            </th>
-
-            <th class="px-4 py-3 text-center font-semibold">
-            Aksi
-            </th>
+            <th class="px-4 py-3 text-left font-semibold">Status</th>
+            <th class="px-4 py-3 text-left font-semibold">Tanggal</th>
+            <th class="px-4 py-3 text-left font-semibold">Sesi</th>
+            <th class="px-4 py-3 text-left font-semibold">NIP</th>
+            <th class="px-4 py-3 text-left font-semibold">Nama</th>
+            <th class="px-4 py-3 text-left font-semibold">Instansi</th>
+            <th class="px-4 py-3 text-left font-semibold">Topik</th>
+            <th class="px-4 py-3 text-left font-semibold">Petugas</th>
+            <th class="px-4 py-3 text-left font-semibold">Link</th>
+            <th class="px-4 py-3 text-center font-semibold">Aksi</th>
         </tr>
         </thead>
 
@@ -400,6 +216,10 @@ const copyText = (text) => {
                 even:bg-slate-50/50
                 hover:bg-blue-50/40"
         >
+            <td class="px-4 py-3">
+                <ConsultationStatusBadge :status="k.status" />
+            </td>
+
             <td class="px-4 py-3">
             {{ k.tanggal }}
             </td>
@@ -446,24 +266,30 @@ const copyText = (text) => {
             </span>
             </td>
 
-            <td class="px-4 py-3">
-            <button
-                v-if="k.linkZoom"
-                @click="copyLink(k.linkZoom)"
+            <td class="px-4 py-3 w-[90px]">
+            <div class="flex items-center gap-1">
+                <button
+                v-if="k.integrasi?.linkZoom"
+                @click="copyLink(k.integrasi.linkZoom)"
                 class="text-blue-700 hover:text-blue-800
-                    hover:underline flex items-center gap-1 font-medium"
-            >
-                <LinkIcon class="w-4 h-4" /> Copy
-            </button>
+                        flex items-center gap-1 text-xs font-medium"
+                >
+                <LinkIcon class="w-4 h-4" />
+                Copy
+                </button>
 
-            <span
+                <span
                 v-else
-                class="inline-block rounded-md bg-red-50 text-red-600
-                    px-2 py-0.5 text-xs font-medium"
-            >
+                class="inline-flex items-center gap-1
+                        rounded-md bg-red-50 text-red-600
+                        px-2 py-0.5 text-xs font-medium"
+                >
+                <Ban class="w-3 h-3" />
                 Belum
-            </span>
+                </span>
+            </div>
             </td>
+
 
             <td class="px-4 py-3 text-center space-x-2">
             <Button
@@ -487,34 +313,86 @@ const copyText = (text) => {
         </tbody>
     </table>
     </div>
+    </div>
 
-    <!-- PAGINATION -->
-    <div class="flex justify-between items-center mt-4">
-    <p class="text-sm text-slate-500">
-        Halaman {{ currentPage }} dari {{ totalPages }}
+    <!-- PAGINATION BAR -->
+    <div
+    class="
+        mt-4
+        flex flex-col
+        sm:flex-row
+        sm:items-center
+        sm:justify-between
+        gap-3
+        text-sm
+    "
+    >
+    <!-- INFO RANGE (LEFT) -->
+    <p class="text-slate-500 whitespace-nowrap">
+    Menampilkan
+    <span class="font-medium text-slate-700">
+        {{ pageStart }}–{{ pageEnd }}
+    </span>
+    dari
+    <span class="font-medium text-slate-700">
+        {{ klienList.length }}
+    </span>
     </p>
 
-    <div class="flex gap-2">
-        <Button
+
+    <!-- NAVIGATION (CENTER) -->
+    <div class="flex items-center gap-2 justify-center">
+    <Button
         size="sm"
         variant="outline"
         :disabled="currentPage === 1"
         @click="currentPage--"
-        >
+    >
         <ChevronLeft class="w-4 h-4" />
-        </Button>
+    </Button>
 
-        <Button
+    <span class="text-slate-600">
+        Halaman
+        <span class="font-medium text-slate-800">
+        {{ currentPage }}
+        </span>
+        /
+        {{ totalPages }}
+    </span>
+
+    <Button
         size="sm"
         variant="outline"
         :disabled="currentPage === totalPages"
         @click="currentPage++"
-        >
+    >
         <ChevronRight class="w-4 h-4" />
-        </Button>
-    </div>
+    </Button>
     </div>
 
+    <!-- PAGE SIZE (RIGHT) -->
+    <div class="flex items-center gap-2 whitespace-nowrap ml-auto">
+        <span class="text-slate-500">Tampilkan</span>
+
+        <select
+        v-model="perPage"
+        class="
+            rounded-md
+            border border-slate-300
+            bg-white
+            px-3 pr-8 py-1.5
+            text-sm
+            focus:outline-none focus:ring-2 focus:ring-blue-500
+        "
+        >
+        <option v-for="n in pageSizes" :key="n" :value="n">
+            {{ n }}
+        </option>
+        </select>
+
+        <span class="text-slate-500">baris</span>
+    </div>
+    </div>
 
     <!-- ASSIGN MODAL -->
     <Dialog v-model:open="showAssignModal">
@@ -533,7 +411,7 @@ const copyText = (text) => {
 
         <div class="space-y-2 max-h-60 overflow-y-auto">
           <div
-            v-for="p in narasumberList"
+            v-for="p in narasumberMock"
             :key="p.nama"
             class="flex justify-between items-center border rounded-lg p-2"
           >
@@ -603,13 +481,13 @@ const copyText = (text) => {
                     <Button
                         size="xs"
                         variant="ghost"
-                        @click="copyText(selectedKlien?.linkZoom)"
+                        @click="copyText(selectedKlien?.integrasi?.linkZoom)"
                     >
                         Salin
                     </Button>
                     </div>
                     <p class="text-blue-700 font-medium break-all">
-                    {{ selectedKlien?.linkZoom ?? '-' }}
+                    {{ selectedKlien?.integrasi?.linkZoom ?? '-' }}
                     </p>
 
                     <div class="flex justify-between items-center">
@@ -617,24 +495,24 @@ const copyText = (text) => {
                     <Button
                         size="xs"
                         variant="ghost"
-                        @click="copyText(selectedKlien?.meetingId)"
+                        @click="copyText(selectedKlien?.integrasi?.meetingId)"
                     >
                         Salin
                     </Button>
                     </div>
-                    <p>{{ selectedKlien?.meetingId ?? '-' }}</p>
+                    <p>{{ selectedKlien?.integrasi?.meetingId ?? '-' }}</p>
 
                     <div class="flex justify-between items-center">
                     <span class="font-medium">Passcode</span>
                     <Button
                         size="xs"
                         variant="ghost"
-                        @click="copyText(selectedKlien?.passcode)"
+                        @click="copyText(selectedKlien?.integrasi?.passcode)"
                     >
                         Salin
                     </Button>
                     </div>
-                    <p>{{ selectedKlien?.passcode ?? '-' }}</p>
+                    <p>{{ selectedKlien?.integrasi?.passcode ?? '-' }}</p>
                 </div>
                 </div>
             <div class="space-y-1 mt-3">
@@ -645,7 +523,7 @@ const copyText = (text) => {
                     class="bg-red-50/40 border border-red-200
                     rounded-lg p-3 text-sm text-slate-700"
                 >
-                    {{ selectedKlien?.deskripsi ?? 'Tidak ada deskripsi.' }}
+                    {{ selectedKlien?.deskripsiMasalah ?? 'Tidak ada deskripsi.' }}
                 </div>
                 </div>
         </div>
@@ -662,5 +540,23 @@ const copyText = (text) => {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  </AdminLayout>
+
+    <Teleport to="body">
+    <div
+    v-if="showToast"
+    class="
+        fixed z-50
+        bottom-4
+        left-1/2 -translate-x-1/2
+        sm:left-auto sm:right-4 sm:translate-x-0
+        bg-slate-900 text-white
+        px-4 py-2 rounded-lg
+        shadow-lg text-sm
+        max-w-[90vw]
+        text-center
+    "
+    >
+    {{ toastMessage }}
+    </div>
+    </Teleport>
 </template>

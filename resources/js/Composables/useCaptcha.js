@@ -4,7 +4,14 @@ export function useCaptcha() {
   const captcha = ref(generateCaptcha())
 
   function generateCaptcha() {
-    return Math.random().toString(36).substring(2, 8).toUpperCase()
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'
+    let result = ''
+    const length = 6
+
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length))
+    }
+    return result
   }
 
   function resetCaptcha() {
@@ -12,6 +19,7 @@ export function useCaptcha() {
   }
 
   function validateCaptcha(input) {
+    // Validasi case-sensitive
     const isValid = input === captcha.value
 
     if (!isValid) {

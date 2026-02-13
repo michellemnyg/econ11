@@ -238,8 +238,21 @@ const pageEnd = computed(() => {
     </Dialog>
 
     <Teleport to="body">
-      <div v-if="showToast" class="fixed z-50 bottom-4 left-1/2 -translate-x-1/2 sm:left-auto sm:right-4 sm:translate-x-0 bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm max-w-[90vw] text-center">
-        {{ toastMessage }}
-      </div>
+    <Transition
+        enter-active-class="transition duration-300 ease-out"
+        enter-from-class="transform translate-y-4 opacity-0"
+        enter-to-class="transform translate-y-0 opacity-100"
+        leave-active-class="transition duration-200 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+    >
+        <div
+        v-if="showToast"
+        style="z-index: 9999;"
+        class="fixed bottom-10 left-1/2 -translate-x-1/2 pointer-events-auto bg-slate-900 text-white px-6 py-3 rounded-xl shadow-2xl text-sm flex items-center gap-2"
+        >
+        <span>{{ toastMessage }}</span>
+        </div>
+    </Transition>
     </Teleport>
 </template>

@@ -241,7 +241,7 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     {
     id: 9,
     tanggal: '2026-02-12',
-    sesi: 'Sesi 5 (15:00 - 15:45)',
+    sesi: 'Sesi 5 (15:00 - 16:45)',
 
     nip: 198112122008121001,
     nama: 'Santoso',

@@ -1,11 +1,11 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { Head } from '@inertiajs/vue3'
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { Link as LinkIcon } from 'lucide-vue-next'
 
 // Components
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/Components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/Components/ui/dialog'
 import { Button } from '@/Components/ui/button'
 import { Input } from '@/Components/ui/input'
 import ConsultationFilterBar from '@/Components/ConsultationFilterBar.vue'
@@ -13,40 +13,32 @@ import ConsultationPeriodModal from '@/Components/ConsultationPeriodModal.vue'
 import ConsultationAdvancedFilter from '@/Components/ConsultationAdvancedFilter.vue'
 import ConsultationTable from '@/Components/ConsultationTable.vue'
 
-// Logic & Mocks
-import { CONSULTATION_TABLE_MOCK as consultationsMock } from '@/Mocks/consultationTable.mock'
-import { narasumberMock } from '@/Mocks/narasumber.mock'
+// Logic
 import { useConsultationTable } from '@/Composables/useConsultationTable'
 import { useClipboardToast } from '@/Composables/useClipboardToast'
 
 defineOptions({ layout: AdminLayout })
 
+// TERIMA 2 DATA DARI LARAVEL (Klien & Narasumber)
+const props = defineProps({
+  klienData: [Object, Array],
+  narasumberList: Array
+})
+
 // Toast Logic
 const { copy, toastMessage, showToast } = useClipboardToast()
 
-// Data Source
-const klienList = ref(consultationsMock)
+// ANTI UNDEFINED: Jika props berupa array, langsung pakai. Jika object, ambil .data-nya.
+const klienList = ref(Array.isArray(props.klienData) ? props.klienData : (props.klienData?.data || []))
 
 // Table Logic (Composable)
 const table = useConsultationTable(klienList)
 const {
-  paginatedData,
-  totalPages,
-  currentPage,
-  perPage,
-  search,
-  periodMode,
-  startDate,
-  endDate,
-  filterInstansi,
-  filterStatus,
-  instansiOptions,
+  paginatedData, totalPages, currentPage, perPage, search, periodMode, startDate, endDate, filterInstansi, filterStatus, instansiOptions,
 } = table
 
 // Local Helper State
 const filterTanggal = ref('')
-
-// Modal Visibility State
 const showPeriodModal = ref(false)
 const showAdvancedFilter = ref(false)
 const showAssignModal = ref(false)
@@ -83,6 +75,7 @@ const openDetail = (row) => {
     showDetailModal.value = true
 }
 
+// Fitur Assign (Sementara Update Frontend)
 const assignPetugas = (nama) => {
     if (!selectedKlien.value) return
     selectedKlien.value.petugas = nama
@@ -112,32 +105,14 @@ const pageEnd = computed(() => {
 
     <div class="mb-6">
       <h2 class="text-2xl font-bold text-slate-800">Daftar Antrian Klien</h2>
-      <p class="text-sm text-slate-500 mt-1">Daftar klien yang terdaftar untuk konsultasi hari ini</p>
+      <p class="text-sm text-slate-500 mt-1">Kelola pendaftaran konsultasi dan penugasan narasumber</p>
     </div>
 
-    <ConsultationFilterBar
-      :search="search"
-      @update:search="search = $event"
-      @open-period="showPeriodModal = true"
-      @open-filter="showAdvancedFilter = true"
-    />
+    <ConsultationFilterBar :search="search" @update:search="search = $event" @open-period="showPeriodModal = true" @open-filter="showAdvancedFilter = true" />
 
-    <ConsultationPeriodModal
-      v-if="showPeriodModal"
-      :start-date="startDate"
-      :end-date="endDate"
-      @close="showPeriodModal = false"
-      @apply="applyPeriod"
-    />
+    <ConsultationPeriodModal v-if="showPeriodModal" :start-date="startDate" :end-date="endDate" @close="showPeriodModal = false" @apply="applyPeriod" />
 
-    <ConsultationAdvancedFilter
-      v-if="showAdvancedFilter"
-      :instansi-options="instansiOptions"
-      :filter-instansi="filterInstansi"
-      :filter-status="filterStatus"
-      @close="showAdvancedFilter = false"
-      @apply="applyAdvancedFilter"
-    />
+    <ConsultationAdvancedFilter v-if="showAdvancedFilter" :instansi-options="instansiOptions" :filter-instansi="filterInstansi" :filter-status="filterStatus" @close="showAdvancedFilter = false" @apply="applyAdvancedFilter" />
 
     <ConsultationTable
       class="mt-6"
@@ -160,23 +135,26 @@ const pageEnd = computed(() => {
       <DialogContent class="max-w-lg border-t-4 border-blue-500">
         <DialogHeader>
           <DialogTitle>Assign Narasumber</DialogTitle>
+          <DialogDescription class="hidden">Pilih narasumber untuk sesi konsultasi ini.</DialogDescription>
         </DialogHeader>
 
-        <Input placeholder="Cari nama atau unit..." v-model="searchPetugas" class="mb-3" />
+        <Input placeholder="Cari nama narasumber..." v-model="searchPetugas" class="mb-3" />
 
-        <div class="space-y-2 max-h-60 overflow-y-auto">
-          <div v-for="p in narasumberMock" :key="p.nama" class="flex justify-between items-center border rounded-lg p-2">
+        <div class="space-y-2 max-h-60 overflow-y-auto pr-2">
+          <div v-for="p in props.narasumberList" :key="p.nama" class="flex justify-between items-center border rounded-lg p-2 hover:bg-slate-50 transition">
             <div>
-              <p class="font-medium">{{ p.nama }}</p>
+              <p class="font-medium text-slate-800">{{ p.nama }}</p>
               <p class="text-xs text-slate-500">{{ p.unit }}</p>
             </div>
-            <Button size="sm" variant="outline" @click="selectedPetugas = p.nama">Pilih</Button>
+            <Button size="sm" :variant="selectedPetugas === p.nama ? 'default' : 'outline'" @click="selectedPetugas = p.nama">
+              {{ selectedPetugas === p.nama ? 'Terpilih' : 'Pilih' }}
+            </Button>
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="secondary" @click="showAssignModal = false">Batal</Button>
-          <Button :disabled="!selectedPetugas" class="bg-blue-600 hover:bg-blue-700 text-white" @click="assignPetugas(selectedPetugas)">Simpan</Button>
+        <DialogFooter class="mt-4 pt-4 border-t">
+          <Button variant="outline" @click="showAssignModal = false">Batal</Button>
+          <Button :disabled="!selectedPetugas" class="bg-blue-600 hover:bg-blue-700 text-white" @click="assignPetugas(selectedPetugas)">Simpan Penugasan</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -185,53 +163,70 @@ const pageEnd = computed(() => {
       <DialogContent class="max-w-lg border-t-4 border-blue-500">
         <DialogHeader>
           <DialogTitle>Detail Konsultasi</DialogTitle>
+          <DialogDescription class="hidden">Informasi lengkap klien dan link zoom meeting.</DialogDescription>
         </DialogHeader>
 
-        <div class="space-y-2 text-sm">
-          <p><strong>Nama:</strong> {{ selectedKlien?.nama }}</p>
-          <p><strong>NIP:</strong> {{ selectedKlien?.nip }}</p>
-          <p><strong>Instansi:</strong> {{ selectedKlien?.instansi }}</p>
-          <p><strong>Tanggal:</strong> {{ selectedKlien?.tanggal }}</p>
-          <p><strong>Sesi:</strong> {{ selectedKlien?.sesi }}</p>
-          <p><strong>Topik:</strong> {{ selectedKlien?.topik }}</p>
-          <p><strong>Petugas:</strong> {{ selectedKlien?.petugas ?? '-' }}</p>
-          <hr class="my-3" />
-
-          <div class="space-y-2">
-            <h4 class="font-semibold text-slate-700 flex items-center gap-2">
-              <LinkIcon class="w-4 h-4" /> Detail Zoom Meeting
-            </h4>
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2 text-sm">
-              <div class="flex justify-between items-center">
-                <span class="font-medium">Link Meeting</span>
-                <Button size="xs" variant="ghost" @click="copyText(selectedKlien?.integrasi?.linkZoom)">Salin</Button>
-              </div>
-              <p class="text-blue-700 font-medium break-all">{{ selectedKlien?.integrasi?.linkZoom ?? '-' }}</p>
-
-              <div class="flex justify-between items-center">
-                 <span class="font-medium">Meeting ID</span>
-                 <Button size="xs" variant="ghost" @click="copyText(selectedKlien?.integrasi?.meetingId)">Salin</Button>
-              </div>
-              <p>{{ selectedKlien?.integrasi?.meetingId ?? '-' }}</p>
-
-              <div class="flex justify-between items-center">
-                 <span class="font-medium">Passcode</span>
-                 <Button size="xs" variant="ghost" @click="copyText(selectedKlien?.integrasi?.passcode)">Salin</Button>
-              </div>
-              <p>{{ selectedKlien?.integrasi?.passcode ?? '-' }}</p>
-            </div>
+        <div class="space-y-3 text-sm mt-2">
+          <div class="grid grid-cols-3 border-b pb-2">
+            <span class="text-slate-500 font-medium col-span-1">Nama</span>
+            <span class="font-semibold text-slate-800 col-span-2">{{ selectedKlien?.nama }}</span>
+          </div>
+          <div class="grid grid-cols-3 border-b pb-2">
+            <span class="text-slate-500 font-medium col-span-1">NIP</span>
+            <span class="col-span-2 font-mono text-slate-700">{{ selectedKlien?.nip }}</span>
+          </div>
+          <div class="grid grid-cols-3 border-b pb-2">
+            <span class="text-slate-500 font-medium col-span-1">Instansi</span>
+            <span class="col-span-2">{{ selectedKlien?.instansi }}</span>
+          </div>
+          <div class="grid grid-cols-3 border-b pb-2">
+            <span class="text-slate-500 font-medium col-span-1">Jadwal</span>
+            <span class="col-span-2">{{ selectedKlien?.tanggal }} &bull; {{ selectedKlien?.sesi }}</span>
+          </div>
+          <div class="grid grid-cols-3 border-b pb-2">
+            <span class="text-slate-500 font-medium col-span-1">Topik</span>
+            <span class="text-blue-600 font-bold col-span-2">{{ selectedKlien?.topik }}</span>
+          </div>
+          <div class="grid grid-cols-3 pb-2">
+            <span class="text-slate-500 font-medium col-span-1">Petugas</span>
+            <span class="col-span-2" :class="selectedKlien?.petugas && selectedKlien?.petugas !== 'Belum Diplot' ? 'text-slate-800' : 'text-red-500 italic'">
+              {{ selectedKlien?.petugas && selectedKlien?.petugas !== 'Belum Diplot' ? selectedKlien?.petugas : 'Belum ditugaskan' }}
+            </span>
           </div>
 
-          <div class="space-y-1 mt-3">
-             <h4 class="font-semibold text-red-700">Deskripsi Singkat Masalah</h4>
-             <div class="bg-red-50/40 border border-red-200 rounded-lg p-3 text-sm text-slate-700">
-                {{ selectedKlien?.deskripsiMasalah ?? 'Tidak ada deskripsi.' }}
-             </div>
+          <div class="mt-6">
+            <h4 class="font-semibold text-slate-800 flex items-center gap-2 mb-3">
+              <LinkIcon class="w-4 h-4 text-blue-500" /> Detail Zoom Meeting
+            </h4>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 text-sm">
+              <div class="flex justify-between items-center bg-white p-2 rounded-lg border">
+                <span class="font-medium text-slate-600">Link Zoom</span>
+                <Button size="sm" variant="secondary" class="h-7 text-xs" @click="copyText(selectedKlien?.integrasi?.linkZoom)">Salin</Button>
+              </div>
+              <p class="text-blue-600 text-xs break-all px-2">{{ selectedKlien?.integrasi?.linkZoom ?? '-' }}</p>
+
+              <div class="grid grid-cols-2 gap-3 mt-3">
+                <div class="bg-white p-3 rounded-lg border">
+                  <span class="block text-xs text-slate-500 mb-1">Meeting ID</span>
+                  <div class="flex justify-between items-center">
+                    <strong class="font-mono text-slate-700">{{ selectedKlien?.integrasi?.meetingId ?? '-' }}</strong>
+                    <button @click="copyText(selectedKlien?.integrasi?.meetingId)" class="text-blue-500 hover:text-blue-700 text-xs">Salin</button>
+                  </div>
+                </div>
+                <div class="bg-white p-3 rounded-lg border">
+                  <span class="block text-xs text-slate-500 mb-1">Passcode</span>
+                  <div class="flex justify-between items-center">
+                    <strong class="font-mono text-slate-700">{{ selectedKlien?.integrasi?.passcode ?? '-' }}</strong>
+                    <button @click="copyText(selectedKlien?.integrasi?.passcode)" class="text-blue-500 hover:text-blue-700 text-xs">Salin</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <DialogFooter>
-           <Button class="border border-slate-300 text-slate-700 hover:bg-slate-100" @click="showDetailModal = false">Tutup</Button>
+        <DialogFooter class="mt-4 pt-4 border-t">
+           <Button variant="outline" @click="showDetailModal = false">Tutup</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -245,12 +240,8 @@ const pageEnd = computed(() => {
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
     >
-        <div
-        v-if="showToast"
-        style="z-index: 9999;"
-        class="fixed bottom-10 left-1/2 -translate-x-1/2 pointer-events-auto bg-slate-900 text-white px-6 py-3 rounded-xl shadow-2xl text-sm flex items-center gap-2"
-        >
-        <span>{{ toastMessage }}</span>
+        <div v-if="showToast" style="z-index: 9999;" class="fixed bottom-10 left-1/2 -translate-x-1/2 pointer-events-auto bg-slate-900 text-white px-6 py-3 rounded-xl shadow-2xl text-sm flex items-center gap-2">
+          <span>{{ toastMessage }}</span>
         </div>
     </Transition>
     </Teleport>

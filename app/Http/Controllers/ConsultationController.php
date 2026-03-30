@@ -157,4 +157,88 @@ class ConsultationController extends Controller
 
         return response()->json($formatted);
     }
+
+    /**
+     * MENGIRIM DATA STATISTIK KE HALAMAN DASHBOARD ADMIN
+     */
+    public function dashboardAdmin(Request $request)
+    {
+        // 1. Ambil rentang tanggal dari request, default: minggu ini
+        $startDate = $request->query('start_date', now()->startOfWeek()->toDateString());
+        $endDate = $request->query('end_date', now()->endOfWeek()->toDateString());
+
+        // 2. Buat query dasar berdasarkan rentang tanggal
+        $query = Consultation::whereBetween('tanggal', [$startDate, $endDate]);
+
+        // 3. Hitung Statistik Utama
+        $stats = [
+            'total' => (clone $query)->count(),
+            'aktif' => (clone $query)->where('status', 'akan_datang')->count(),
+            'selesai' => (clone $query)->where('status', 'selesai')->count(),
+        ];
+
+        // 4. Hitung Topik Populer (Top 5)
+        $topik = (clone $query)->selectRaw('topik_id, count(*) as jumlah')
+            ->with('topik')
+            ->groupBy('topik_id')
+            ->orderByDesc('jumlah')
+            ->limit(5)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'nama' => $item->topik->nama_topik ?? 'Konsultasi Kepegawaian',
+                    'jumlah' => $item->jumlah
+                ];
+            });
+
+        // 5. Hitung Instansi Terbanyak (Top 5)
+        $instansi = (clone $query)->selectRaw('instansi as nama, count(*) as jumlah')
+            ->whereNotNull('instansi')
+            ->groupBy('instansi')
+            ->orderByDesc('jumlah')
+            ->limit(5)
+            ->get();
+
+        // 6. Hitung Kinerja Narasumber
+        $kinerja = (clone $query)->selectRaw('narasumber as nama, count(*) as jumlah')
+            ->whereNotNull('narasumber')
+            ->groupBy('narasumber')
+            ->orderByDesc('jumlah')
+            ->get();
+
+        // 7. Kirim data yang sudah matang ke Vue (Inertia)
+        return inertia('Dashboard', [
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
+            'stats' => $stats,
+            'topik' => $topik,
+            'instansi' => $instansi,
+            'kinerja' => $kinerja,
+        ]);
+    }
+
+    public function indexAdmin()
+    {
+        $klien = \App\Models\Consultation::with('topik')->orderBy('created_at', 'desc')->get();
+        $formattedData = \App\Http\Resources\ConsultationResource::collection($klien);
+
+        // AMBIL DATA NARASUMBER (Jika tabel belum ada, kita pakai data dummy di Controller dulu agar tidak error)
+        $narasumberList = [];
+        if (\Illuminate\Support\Facades\Schema::hasTable('narasumbers')) {
+            $narasumberList = \App\Models\Narasumber::select('nama', 'unit')->orderBy('nama', 'asc')->get();
+        } else {
+            // Fallback sementara jika Anda belum menjalankan php artisan migrate untuk narasumber
+            $narasumberList = [
+                ['nama' => 'Budi Santoso', 'unit' => 'Tim Manajemen Kinerja'],
+                ['nama' => 'Siti Aminah', 'unit' => 'Tim Pengadaan'],
+            ];
+        }
+
+        return inertia('Klien/Index', [
+            'klienData' => $formattedData,
+            'narasumberList' => $narasumberList // INI KUNCI AGAR MODAL TIDAK KOSONG
+        ]);
+    }
 }

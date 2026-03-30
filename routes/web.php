@@ -34,13 +34,11 @@ Route::get('/api/consultations/calendar', [ConsultationController::class, 'getCa
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
+    // Dashboard Admin
+    Route::get('/dashboard', [ConsultationController::class, 'dashboardAdmin'])->name('dashboard');
 
-    Route::get('/klien', function () {
-        return Inertia::render('Klien/Index');
-    })->name('klien');
+    // Hapus Route::get('/klien', function()...) yang lama, ganti dengan ini:
+    Route::get('/klien', [App\Http\Controllers\ConsultationController::class, 'indexAdmin'])->name('klien');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

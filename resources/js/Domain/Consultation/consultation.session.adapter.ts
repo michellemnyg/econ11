@@ -1,68 +1,42 @@
-import type {
-  ConsultationRow,
-  ConsultationSessionTime,
-  ConsultationStatus,
-} from './consultation.types'
+import type { ConsultationRow } from './consultation.types'
 
-/**
- * Parse string sesi:
- * "Sesi 1 (09:00 - 09:45)"
- */
-export function parseSessionTime(
-  sesi: string,
-): ConsultationSessionTime | null {
-  const match = sesi.match(
-    /(Sesi\s+\d+)\s*\((\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})\)/,
-  )
-
-  if (!match) return null
-
-  return {
-    label: match[1],
-    start: match[2],
-    end: match[3],
-  }
+const SESSION_MAP: Record<string, any> = {
+  'sesi-1': { label: 'Sesi 1 (09:00 - 09:45)', start: '09:00', end: '09:45' },
+  'sesi-2': { label: 'Sesi 2 (10:00 - 10:45)', start: '10:00', end: '10:45' },
+  'sesi-3': { label: 'Sesi 3 (11:00 - 11:45)', start: '11:00', end: '11:45' },
+  'sesi-4': { label: 'Sesi 4 (14:00 - 14:45)', start: '14:00', end: '14:45' },
+  'sesi-5': { label: 'Sesi 5 (15:00 - 15:45)', start: '15:00', end: '15:45' },
 }
 
-/**
- * Gabungkan tanggal + jam menjadi Date
- */
-function buildDateTime(date: string, time: string): Date {
-  return new Date(`${date}T${time}:00`)
+export function parseSessionTime(sesi: string) {
+  return SESSION_MAP[sesi] || null
 }
 
-/**
- * Hitung status otomatis berdasarkan waktu sekarang
- */
-export function computeConsultationStatus(
-  row: ConsultationRow,
-  now: Date = new Date(),
-): ConsultationStatus {
-  const session = row.sessionTime ?? parseSessionTime(row.sesi)
-  if (!session) return row.status
+export function computeConsultationStatus(row: any, now: Date = new Date()) {
+  const session = parseSessionTime(row.sesi)
+  if (!session) return 'akan_datang'
 
-  const start = buildDateTime(row.tanggal, session.start)
-  const end = buildDateTime(row.tanggal, session.end)
+  const start = new Date(`${row.tanggal}T${session.start}:00`)
+  const end = new Date(`${row.tanggal}T${session.end}:00`)
 
   if (now < start) return 'akan_datang'
   if (now >= start && now <= end) return 'berlangsung'
   return 'berlalu'
 }
 
-/**
- * Normalize row dari backend → domain-safe
- */
-export function normalizeConsultationRow(
-  row: ConsultationRow,
-): ConsultationRow {
+export function normalizeConsultationRow(row: any): ConsultationRow {
   const sessionTime = parseSessionTime(row.sesi)
 
   return {
     ...row,
-    sessionTime: sessionTime ?? undefined,
-    status: computeConsultationStatus({
-      ...row,
-      sessionTime: sessionTime ?? undefined,
-    }),
+    // Gunakan label cantik untuk UI
+    sesi: sessionTime ? sessionTime.label : row.sesi,
+    sessionTime: sessionTime || undefined,
+
+    // PENTING: Map narasumber dari Laravel menjadi petugas untuk tabel Vue
+    petugas: row.narasumber || null,
+
+    // Hitung status real-time untuk badge di tabel
+    status: computeConsultationStatus(row)
   }
 }

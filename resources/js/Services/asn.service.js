@@ -1,6 +1,6 @@
 import { ASN_MOCK } from '@/Mocks/asn.mock'
 import { useApiSource } from '@/Composables/useApiSource'
-// import axios from 'axios' // aktifkan nanti
+import axios from 'axios' // Axios diaktifkan
 
 /**
  * Cari ASN berdasarkan NIP dan Nama (Case Insensitive)
@@ -17,16 +17,13 @@ export async function findAsn(nip, nama) {
   // ==========================
   // MOCK MODE (FRONTEND PHASE)
   // ==========================
+  // Jika di .env VITE_API_MODE=mock, ini yang akan jalan
   if (isMock) {
-    // Simulasi delay loading agar terasa seperti aplikasi nyata
     await new Promise(r => setTimeout(r, 500))
 
     return ASN_MOCK.find((asn) => {
-        // Cek NIP sama persis
         const nipMatch = asn.nip === nip
-        // Cek Nama (tidak peduli huruf besar/kecil)
         const nameMatch = asn.nama.toLowerCase().includes(nama.toLowerCase())
-
         return nipMatch && nameMatch
     }) || null
   }
@@ -34,14 +31,21 @@ export async function findAsn(nip, nama) {
   // ==========================
   // API MODE (BACKEND PHASE)
   // ==========================
+  // Jika VITE_API_MODE=api (atau tidak ada), ini yang jalan
   try {
-    // kirim body post: { nip: '...', nama: '...' }
-    // const response = await axios.post(`/api/asn/check`, { nip, nama })
-    // return response.data
+    // Tembak endpoint Laravel
+    const response = await axios.post(`/api/asn/check`, { nip, nama })
 
-    throw new Error('API mode not implemented yet')
-  } catch (error) {
-    console.error('[ASN SERVICE]', error)
+    // AsnController mengembalikan: { success: true, data: { nama, jabatan, instansi } }
+    if (response.data && response.data.success) {
+      return response.data.data
+    }
+
     return null
+
+  } catch (error) {
+    // Menangkap error 404 jika data tidak ditemukan di database
+    console.error('[ASN SERVICE]', error.response?.data?.message || error.message)
+    return null // Kembalikan null agar Welcome.vue menampilkan pesan error
   }
 }

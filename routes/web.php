@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\AsnController;
+use App\Http\Controllers\ConsultationController;
+
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -14,6 +17,22 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
+
+Route::get('/', function () {
+    return Inertia::render('Welcome', [
+        // Kirim URL gambar captcha awal saat halaman pertama dimuat
+        'captcha_url' => captcha_src('flat')
+    ]);
+})->name('home');
+
+// Endpoint untuk refresh gambar captcha (dipanggil via Axios di Vue)
+Route::get('/refresh-captcha', function() {
+    return response()->json(['captcha_url' => captcha_src('flat')]);
+});
+
+// Endpoint Form
+Route::post('/api/asn/check', [AsnController::class, 'check']);
+Route::post('/api/consultation/submit', [ConsultationController::class, 'store']);
 
 /*
 |--------------------------------------------------------------------------

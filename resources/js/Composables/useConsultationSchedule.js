@@ -21,8 +21,14 @@ export function useConsultationSchedule(form) {
   watch(
     () => form.value.tanggal,
     async (date) => {
+      // Reset pilihan sesi dan kosongkan daftar booking tiap kali tanggal diganti
+      form.value.sesi = ''
+      bookedSessions.value = []
+
       if (!date) return
-      bookedSessions.value = await getBookedSessionsByDate(date)
+
+      // Pengaman agar selalu menjadi array, mencegah error '.some()'
+      bookedSessions.value = (await getBookedSessionsByDate(date)) || []
     },
     { immediate: true }
   )
@@ -32,8 +38,15 @@ export function useConsultationSchedule(form) {
 
     const today = getTodayWitaDate()
 
+    // Ambil index hari (0 = Minggu, 1 = Senin, ..., 6 = Sabtu)
+    const selectedDateObj = new Date(form.value.tanggal)
+    const dayOfWeek = selectedDateObj.getDay()
+
     return sessions.map((session) => {
       let disabled = false
+
+      // ❌ BARU: Libur Sabtu (6) dan Minggu (0)
+      if (dayOfWeek === 0 || dayOfWeek === 6) disabled = true
 
       // ❌ tanggal lampau
       if (isPastDate(form.value.tanggal)) disabled = true
@@ -52,10 +65,11 @@ export function useConsultationSchedule(form) {
 
       // ❌ sesi sudah dibooking
       if (
-        bookedSessions.value.some(
-          (b) => b.session === session.value
-        )
-      ) disabled = true
+        Array.isArray(bookedSessions.value) &&
+        bookedSessions.value.some((b) => b.session === session.value)
+      ) {
+        disabled = true
+      }
 
       return {
         ...session,

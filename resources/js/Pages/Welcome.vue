@@ -10,7 +10,6 @@ import ConsultationSessionDetailModal from '@/Components/app/modals/Consultation
 import { useCalendarStore } from '@/Stores/useCalendarStore'
 
 // composables
-import { useCaptcha } from '@/Composables/useCaptcha'
 import { useConsultationFormValidation } from '@/Composables/useConsultationFormValidation'
 import { useConsultationSchedule } from '@/Composables/useConsultationSchedule'
 
@@ -20,6 +19,16 @@ import { submitConsultation } from '@/Services/consultation.service'
 
 // mocks
 import { CONSULTATION_TOPICS } from '@/Mocks/consultation-topics.mock'
+
+import axios from 'axios'
+
+// BARU: Terima props dari Laravel (URL awal gambar captcha)
+const props = defineProps({
+  captcha_url: {
+    type: String,
+    default: ''
+  }
+})
 
 /**
  * Calendar Store
@@ -67,8 +76,6 @@ const openSessionDetail = (session) => {
 /**
  * Composables
  */
-const { captcha, resetCaptcha, validateCaptcha } = useCaptcha()
-
 const {
   errors: formErrors,
   validate,
@@ -87,10 +94,23 @@ const modalType = ref('error')
 /**
  * Computed
  */
-// Tombol search hanya aktif jika NIP & Nama sudah diisi
 const canSearch = computed(() => {
-    return nip.value.length > 0 && nama.value.length > 0
+  return nip.value.length > 0 && nama.value.length > 0
 })
+
+/**
+ * BARU: Methods Captcha Server-Side
+ */
+const captchaImgUrl = ref(props.captcha_url)
+
+const refreshCaptcha = async () => {
+  try {
+    const response = await axios.get('/refresh-captcha')
+    captchaImgUrl.value = response.data.captcha_url
+  } catch (error) {
+    console.error('Gagal memuat ulang captcha', error)
+  }
+}
 
 /**
  * Methods
@@ -119,18 +139,38 @@ async function submitForm() {
 
   if (!validate() || isSubmitting.value) return
 
-  if (!validateCaptcha(form.value.captchaInput)) {
-    modalType.value = 'error'
-    modalOpen.value = true
-    resetCaptcha()
-    form.value.captchaInput = ''
-    return
+  isSubmitting.value = true
+  clearErrors() // Bersihkan sisa error sebelumnya
+
+  // BARU: Gabungkan data form dengan data ASN hasil validasi
+  const payload = {
+    ...form.value,
+    nip: nip.value,
+    nama: nama.value,
+    jabatan: asn.value.jabatan,
+    instansi: asn.value.instansi,
   }
 
-  isSubmitting.value = true
-
   try {
-    consultationResult.value = await submitConsultation(form.value)
+    // 1. Simpan respons asli dari Laravel
+    const result = await submitConsultation(payload)
+
+    const selectedTopic = CONSULTATION_TOPICS.find(
+        t => t.value === parseInt(form.value.topik) || t.value === form.value.topik
+    );
+
+    // 2. BARU: Rakit ulang struktur data agar komponen Modal & MeetingInfo tidak crash!
+    consultationResult.value = {
+      ...result.data, // Data konsultasi asli dari database
+      meeting: {      // Data dummy untuk memuaskan MeetingInfo.vue sementara
+        platform: 'Zoom Meeting (Segera Terbit)',
+        link: 'Link otomatis sedang diproses...',
+        passcode: '-',
+        tanggal: form.value.tanggal,
+        sesi: form.value.sesi,
+        topic: selectedTopic ? selectedTopic.title : ''
+      }
+    }
 
     addBookedSession({
       tanggal: form.value.tanggal,
@@ -139,13 +179,41 @@ async function submitForm() {
         label: availableSessions.value.find(
           s => s.value === form.value.sesi
         )?.label,
-        narasumber: 'Narasumber A',
-        topik: form.value.topik,
+        narasumber: 'Menunggu Plotting',
+        topik: selectedTopic ? selectedTopic.title : '',
       },
     })
 
     modalType.value = 'success'
     modalOpen.value = true
+  } catch (error) {
+    if (error.response?.status === 422) {
+      const backendErrors = error.response.data.errors;
+
+      // Masukkan teks merah di bawah input
+      for (const field in backendErrors) {
+        if (formErrors.value !== undefined) {
+            formErrors.value[field] = backendErrors[field][0];
+        } else {
+            formErrors[field] = backendErrors[field][0];
+        }
+      }
+
+      // BARU: Jika error-nya secara spesifik adalah captcha, munculkan pop-up ErrorNotice
+      if (backendErrors.captchaInput) {
+        modalType.value = 'error'
+        modalOpen.value = true
+      }
+
+    } else {
+      // Jika error 500 (Crash)
+      console.error('Server DB Error:', error.response?.data || error.message);
+      modalType.value = 'error'
+      modalOpen.value = true
+    }
+
+    refreshCaptcha()
+    form.value.captchaInput = ''
   } finally {
     isSubmitting.value = false
   }
@@ -168,7 +236,7 @@ function resetForm() {
     captchaInput: '',
   }
 
-  resetCaptcha()
+  refreshCaptcha() // BARU
 }
 
 function handleModalClose() {
@@ -177,7 +245,7 @@ function handleModalClose() {
   if (modalType.value === 'success') {
     resetForm()
   } else {
-    resetCaptcha()
+    refreshCaptcha() // BARU
     form.value.captchaInput = ''
   }
 }
@@ -390,11 +458,12 @@ const scrollToCalendar = () => {
                         <div>
                             <label class="text-sm font-medium text-slate-700">Keamanan</label>
                             <div class="flex items-center gap-2 mt-1">
-                            <div class="px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg font-mono text-lg font-bold tracking-widest text-slate-600 select-none">
-                                {{ captcha }}
+                            <div class="overflow-hidden rounded-lg border border-slate-300 bg-white" title="Klik gambar untuk refresh" @click="refreshCaptcha">
+                                <img v-if="captchaImgUrl" :src="captchaImgUrl" alt="Captcha" class="h-[42px] cursor-pointer hover:opacity-80 transition-opacity" />
+                                <div v-else class="w-[120px] h-[42px] bg-slate-200 animate-pulse"></div>
                             </div>
                             <button
-                                @click="resetCaptcha"
+                                @click="refreshCaptcha"
                                 type="button"
                                 class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
                                 title="Refresh Captcha"
@@ -408,7 +477,7 @@ const scrollToCalendar = () => {
                                     placeholder="Ketik kode di samping"
                                     class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                                 />
-                                <p v-if="formErrors.captchaInput" class="text-xs text-red-500 mt-1">
+                                <p v-if="formErrors.captchaInput" class="text-xs text-red-500 mt-1 font-medium">
                                     {{ formErrors.captchaInput }}
                                 </p>
                             </div>

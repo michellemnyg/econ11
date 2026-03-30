@@ -14,10 +14,6 @@ const currentMonth = ref(new Date())
 
 const WEEK_DAYS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']
 
-onMounted(async () => {
-  sessions.value = await getCalendarSessions()
-})
-
 const monthLabel = computed(() =>
   currentMonth.value.toLocaleDateString('id-ID', {
     month: 'long',

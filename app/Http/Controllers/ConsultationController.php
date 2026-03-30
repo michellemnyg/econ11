@@ -224,21 +224,36 @@ class ConsultationController extends Controller
         $klien = \App\Models\Consultation::with('topik')->orderBy('created_at', 'desc')->get();
         $formattedData = \App\Http\Resources\ConsultationResource::collection($klien);
 
-        // AMBIL DATA NARASUMBER (Jika tabel belum ada, kita pakai data dummy di Controller dulu agar tidak error)
+        // AMBIL DATA NARASUMBER DARI DATABASE
         $narasumberList = [];
         if (\Illuminate\Support\Facades\Schema::hasTable('narasumbers')) {
             $narasumberList = \App\Models\Narasumber::select('nama', 'unit')->orderBy('nama', 'asc')->get();
         } else {
-            // Fallback sementara jika Anda belum menjalankan php artisan migrate untuk narasumber
             $narasumberList = [
                 ['nama' => 'Budi Santoso', 'unit' => 'Tim Manajemen Kinerja'],
                 ['nama' => 'Siti Aminah', 'unit' => 'Tim Pengadaan'],
+                ['nama' => 'Andi Wijaya', 'unit' => 'Tim Disiplin'],
             ];
         }
 
         return inertia('Klien/Index', [
             'klienData' => $formattedData,
-            'narasumberList' => $narasumberList // INI KUNCI AGAR MODAL TIDAK KOSONG
+            'narasumberList' => $narasumberList
         ]);
+    }
+
+    // FUNGSI BARU UNTUK MENYIMPAN ASSIGNMENT KE DATABASE
+    public function assignNarasumber(\Illuminate\Http\Request $request, $id)
+    {
+        $request->validate([
+            'narasumber' => 'required|string|max:255'
+        ]);
+
+        $consultation = \App\Models\Consultation::findOrFail($id);
+        $consultation->update([
+            'narasumber' => $request->narasumber
+        ]);
+
+        return redirect()->back()->with('success', 'Narasumber berhasil ditugaskan.');
     }
 }

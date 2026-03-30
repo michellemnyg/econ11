@@ -39,7 +39,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Hapus Route::get('/klien', function()...) yang lama, ganti dengan ini:
     Route::get('/klien', [App\Http\Controllers\ConsultationController::class, 'indexAdmin'])->name('klien');
-
+    Route::patch('/klien/{id}/assign', [App\Http\Controllers\ConsultationController::class, 'assignNarasumber'])->name('klien.assign');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

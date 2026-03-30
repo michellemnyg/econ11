@@ -1,52 +1,28 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
-import {
-  LayoutDashboard,
-  Users,
-  LogOut,
-  Menu,
-} from 'lucide-vue-next'
+import { LayoutDashboard, Users, LogOut, Menu } from 'lucide-vue-next'
 
 const page = usePage()
-
-/**
- * Sidebar state
- * default: collapsed (desktop & mobile)
- */
 const sidebarOpen = ref(false)
 
-/**
- * User info (dummy-safe)
- * nanti otomatis dari auth
- */
+// Mengambil data user & role dari auth Laravel
 const user = computed(() => {
   return page.props.auth?.user ?? {
-    name: 'Nama Operator',
+    name: 'Administrator',
     role: 'operator',
   }
 })
 
-/**
- * Page title based on route/component
- */
 const pageTitle = computed(() => {
-  const component = page.component
-
-  if (component.includes('Dashboard')) return 'Dashboard'
-  if (component.includes('Klien')) return 'Klien'
-  return 'Admin'
+  if (page.component.includes('Dashboard')) return 'Dashboard'
+  if (page.component.includes('Klien')) return 'Klien'
+  return 'Admin Panel'
 })
 
-/**
- * Active route helper
- */
-const isActive = (name) => {
-  return page.url.startsWith(name)
-}
+const isActive = (name) => page.url.startsWith(name)
 
 const sidebarRef = ref(null)
-
 const handleClickOutside = (event) => {
   if (sidebarOpen.value && sidebarRef.value && !sidebarRef.value.contains(event.target)) {
     if (!event.target.closest('button[aria-label="Buka sidebar"]')) {
@@ -60,128 +36,99 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-100 flex">
-    <!-- SIDEBAR -->
+  <div class="min-h-screen bg-slate-50 flex">
+
     <aside
       ref="sidebarRef"
       :class="[
-        'fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 transform transition-transform duration-200',
+        'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-out shadow-2xl',
         sidebarOpen ? 'translate-x-0' : '-translate-x-full',
       ]"
     >
-      <!-- Sidebar Header -->
-      <div class="flex items-center justify-between px-4 h-16 border-b border-slate-200">
-        <div class="flex items-center gap-2">
-          <img
-            src="https://asndigital.bkn.go.id/images/logo-bkn.png"
-            alt="BKN"
-            class="h-8"
-          />
-          <span class="font-bold text-slate-800">econ11</span>
+      <div class="flex items-center justify-between px-5 h-16 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <img src="https://asndigital.bkn.go.id/images/logo-bkn.png" alt="BKN" class="h-8" />
+          <span class="font-extrabold text-slate-800 tracking-tight text-lg">econ<span class="text-blue-600">11</span></span>
         </div>
-
-        <button
-          class="text-slate-500 hover:text-blue-500"
-          @click="sidebarOpen = false"
-          aria-label="Tutup sidebar"
-        >
+        <button class="text-slate-400 hover:text-blue-600 transition p-1 rounded-md hover:bg-slate-50" @click="sidebarOpen = false" aria-label="Tutup sidebar">
           <Menu class="w-5 h-5" />
         </button>
       </div>
 
-      <!-- Navigation -->
-      <nav class="px-3 py-4 space-y-1">
+      <nav class="px-4 py-6 space-y-2 flex-1 h-[calc(100vh-140px)] overflow-y-auto">
+        <p class="px-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">Menu Utama</p>
+
         <Link
           href="/dashboard"
           :class="[
-            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
-            isActive('/dashboard')
-                ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500'
-                : 'text-slate-600 hover:bg-slate-100',
+            'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all',
+            isActive('/dashboard') ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600',
           ]"
         >
-          <LayoutDashboard class="w-5 h-5" />
+          <LayoutDashboard class="w-5 h-5" :class="isActive('/dashboard') ? 'text-blue-600' : 'text-slate-400'" />
           Dashboard
         </Link>
 
         <Link
           href="/klien"
           :class="[
-            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
-            isActive('/klien')
-            ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-500'
-            : 'text-slate-600 hover:bg-slate-100'
+            'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all',
+            isActive('/klien') ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600',
           ]"
         >
-          <Users class="w-5 h-5" />
-          Klien
+          <Users class="w-5 h-5" :class="isActive('/klien') ? 'text-blue-600' : 'text-slate-400'" />
+          Klien / Konsultasi
         </Link>
       </nav>
 
-      <!-- Logout -->
-      <div class="absolute bottom-0 w-full border-t border-slate-200 p-4">
+      <div class="absolute bottom-0 w-full border-t border-slate-100 p-4 bg-white">
         <Link
           href="/logout"
           method="post"
           as="button"
-          class="flex w-full items-center gap-3 text-sm text-red-500 hover:bg-red-50 rounded-lg px-3 py-2"
+          class="flex w-full items-center gap-3 text-sm font-bold text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl px-4 py-2.5 transition-colors"
         >
           <LogOut class="w-5 h-5" />
-          Logout
+          Keluar Sistem
         </Link>
       </div>
     </aside>
 
-    <!-- OVERLAY MOBILE -->
-    <div
-      v-if="sidebarOpen"
-      class="fixed inset-0 bg-black/30 z-30 lg:hidden"
-      @click="sidebarOpen = false"
-    />
+    <div v-if="sidebarOpen" class="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-40 transition-opacity" @click="sidebarOpen = false" />
 
-    <!-- MAIN -->
-    <div class="flex-1 flex flex-col">
-      <!-- HEADER -->
-      <header
-        class="sticky top-0 z-20 h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4"
-      >
-        <div class="flex items-center gap-3">
-          <button
-            class="text-slate-600 hover:text-blue-500"
-            @click="sidebarOpen = true"
-            aria-label="Buka sidebar"
-          >
-            <Menu class="w-6 h-6" />
+    <div class="flex-1 flex flex-col min-w-0 transition-all duration-300">
+
+      <header class="sticky top-0 z-30 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 shadow-sm">
+        <div class="flex items-center gap-4">
+          <button class="text-slate-500 hover:text-blue-600 transition p-1.5 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow" @click="sidebarOpen = true" aria-label="Buka sidebar">
+            <Menu class="w-5 h-5" />
           </button>
-
-          <h1 class="text-lg font-semibold text-slate-800">
-            {{ pageTitle }}
-          </h1>
+          <h1 class="text-xl font-extrabold text-slate-800 tracking-tight">{{ pageTitle }}</h1>
         </div>
 
-        <!-- User Info -->
-        <div class="text-right">
-        <div class="text-sm font-medium text-slate-800">
-            {{ user.name }}
-        </div>
-
-        <div
-            class="inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-medium capitalize"
-            :class="{
-            'bg-red-50 text-red-600': user.role === 'superadmin',
-            'bg-blue-50 text-blue-600': user.role === 'operator',
-            'bg-green-50 text-green-600': user.role === 'ketua tim',
-            }"
-        >
-            {{ user.role }}
-        </div>
+        <div class="flex items-center gap-3 text-right">
+          <div class="hidden sm:block">
+            <div class="text-sm font-bold text-slate-800">{{ user.name }}</div>
+            <div class="text-[10px] font-extrabold uppercase tracking-widest mt-0.5"
+                 :class="{
+                   'text-red-600': user.role === 'superadmin' || user.role === 'admin',
+                   'text-blue-600': user.role === 'operator',
+                   'text-emerald-600': user.role === 'ketua tim' || user.role === 'ketua_tim',
+                   'text-slate-500': !user.role
+                 }">
+              {{ user.role || 'Operator' }}
+            </div>
+          </div>
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-md flex items-center justify-center text-white font-bold text-sm border-2 border-white ring-2 ring-slate-100">
+            {{ user.name.charAt(0).toUpperCase() }}
+          </div>
         </div>
       </header>
 
-      <!-- CONTENT -->
-      <main class="flex-1 p-4 sm:p-6">
+      <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-x-hidden">
         <slot />
       </main>
     </div>
+
   </div>
 </template>

@@ -29,10 +29,24 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
+        // KUNCI UTAMA: Jika ada user yang login, muat data level-nya dari database
+        if ($user) {
+            $user->load('level');
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                // Format ulang data user sebelum dikirim ke Vue
+                'user' => $user ? [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'nip' => $user->nip,
+                    // Ubah nama_level menjadi 'role' agar Vue mudah membacanya
+                    'role' => $user->level->nama_level ?? 'Operator',
+                ] : null,
             ],
         ];
     }

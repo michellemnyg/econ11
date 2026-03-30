@@ -6,13 +6,11 @@ import { LayoutDashboard, Users, LogOut, Menu } from 'lucide-vue-next'
 const page = usePage()
 const sidebarOpen = ref(false)
 
-// Mengambil data user & role dari auth Laravel
-const user = computed(() => {
-  return page.props.auth?.user ?? {
-    name: 'Administrator',
-    role: 'operator',
-  }
-})
+// 100% AMBIL DARI DATABASE (Tanpa Mockup Fallback)
+const user = computed(() => page.props.auth?.user || { name: 'Loading...', role: '' })
+
+// Normalisasi role menjadi huruf kecil agar styling CSS (merah/biru/hijau) selalu akurat
+const userRole = computed(() => (user.value.role || '').toLowerCase())
 
 const pageTitle = computed(() => {
   if (page.component.includes('Dashboard')) return 'Dashboard'
@@ -37,7 +35,6 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 
 <template>
   <div class="min-h-screen bg-slate-50 flex">
-
     <aside
       ref="sidebarRef"
       :class="[
@@ -97,7 +94,6 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
     <div v-if="sidebarOpen" class="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-40 transition-opacity" @click="sidebarOpen = false" />
 
     <div class="flex-1 flex flex-col min-w-0 transition-all duration-300">
-
       <header class="sticky top-0 z-30 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 shadow-sm">
         <div class="flex items-center gap-4">
           <button class="text-slate-500 hover:text-blue-600 transition p-1.5 bg-white rounded-lg border border-slate-200 shadow-sm hover:shadow" @click="sidebarOpen = true" aria-label="Buka sidebar">
@@ -111,12 +107,12 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
             <div class="text-sm font-bold text-slate-800">{{ user.name }}</div>
             <div class="text-[10px] font-extrabold uppercase tracking-widest mt-0.5"
                  :class="{
-                   'text-red-600': user.role === 'superadmin' || user.role === 'admin',
-                   'text-blue-600': user.role === 'operator',
-                   'text-emerald-600': user.role === 'ketua tim' || user.role === 'ketua_tim',
-                   'text-slate-500': !user.role
+                   'text-red-600': userRole === 'superadmin' || userRole === 'admin',
+                   'text-blue-600': userRole === 'operator',
+                   'text-emerald-600': userRole === 'ketua tim' || userRole === 'ketua_tim',
+                   'text-slate-500': !userRole
                  }">
-              {{ user.role || 'Operator' }}
+              {{ user.role || 'Tanpa Role' }}
             </div>
           </div>
           <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow-md flex items-center justify-center text-white font-bold text-sm border-2 border-white ring-2 ring-slate-100">
@@ -129,6 +125,5 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
         <slot />
       </main>
     </div>
-
   </div>
 </template>

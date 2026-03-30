@@ -5,8 +5,9 @@ const calendarSessions = ref([])
 const isLoaded = ref(false)
 
 export function useCalendarStore() {
-  async function loadCalendar() {
-    if (isLoaded.value) return
+  async function loadCalendar(forceRefresh = false) {
+    // Jika sudah pernah load dan tidak dipaksa refresh, return
+    if (isLoaded.value && !forceRefresh) return
 
     calendarSessions.value = await getCalendarSessions()
     isLoaded.value = true

@@ -137,41 +137,40 @@ async function submitForm() {
     return;
   }
 
-  if (!validate() || isSubmitting.value) return
+  if (!validate() || isSubmitting.value) return;
 
-  isSubmitting.value = true
-  clearErrors() // Bersihkan sisa error sebelumnya
+  isSubmitting.value = true;
+  clearErrors(); // Bersihkan sisa error validasi sebelumnya
 
-  // BARU: Gabungkan data form dengan data ASN hasil validasi
+  // Siapkan data lengkap untuk dikirim ke Laravel
   const payload = {
     ...form.value,
     nip: nip.value,
     nama: nama.value,
     jabatan: asn.value.jabatan,
     instansi: asn.value.instansi,
-  }
+  };
 
   try {
-    // 1. Simpan respons asli dari Laravel
-    const result = await submitConsultation(payload)
+    // 1. Kirim data ke Backend dan dapatkan respons (termasuk data Zoom)
+    const response = await submitConsultation(payload);
 
+    // 2. Cari detail teks topik berdasarkan ID untuk keperluan tampilan UI
     const selectedTopic = CONSULTATION_TOPICS.find(
-        t => t.value === parseInt(form.value.topik) || t.value === form.value.topik
+      t => t.value === parseInt(form.value.topik) || t.value === form.value.topik
     );
 
-    // 2. BARU: Rakit ulang struktur data agar komponen Modal & MeetingInfo tidak crash!
+    // 3. Masukkan hasil ke consultationResult (Data asli dari Zoom API)
+    // Struktur 'response.meeting' berasal dari return json ConsultationController kita
     consultationResult.value = {
-      ...result.data, // Data konsultasi asli dari database
-      meeting: {      // Data dummy untuk memuaskan MeetingInfo.vue sementara
-        platform: 'Zoom Meeting (Segera Terbit)',
-        link: 'Link otomatis sedang diproses...',
-        passcode: '-',
-        tanggal: form.value.tanggal,
-        sesi: form.value.sesi,
+      ...response.data,
+      meeting: {
+        ...response.meeting,
         topic: selectedTopic ? selectedTopic.title : ''
       }
-    }
+    };
 
+    // 4. Update jadwal di Kalender (Pinia Store)
     addBookedSession({
       tanggal: form.value.tanggal,
       sesi: {
@@ -182,40 +181,43 @@ async function submitForm() {
         narasumber: 'Menunggu Plotting',
         topik: selectedTopic ? selectedTopic.title : '',
       },
-    })
+    });
 
-    modalType.value = 'success'
-    modalOpen.value = true
+    // 5. Tampilkan Modal Sukses
+    modalType.value = 'success';
+    modalOpen.value = true;
+
   } catch (error) {
+    // Tangani Error 422 (Validasi gagal / Captcha salah)
     if (error.response?.status === 422) {
       const backendErrors = error.response.data.errors;
 
-      // Masukkan teks merah di bawah input
+      // Map error ke masing-masing field input
       for (const field in backendErrors) {
         if (formErrors.value !== undefined) {
-            formErrors.value[field] = backendErrors[field][0];
+          formErrors.value[field] = backendErrors[field][0];
         } else {
-            formErrors[field] = backendErrors[field][0];
+          formErrors[field] = backendErrors[field][0];
         }
       }
 
-      // BARU: Jika error-nya secara spesifik adalah captcha, munculkan pop-up ErrorNotice
+      // Munculkan modal error khusus jika captcha yang bermasalah
       if (backendErrors.captchaInput) {
-        modalType.value = 'error'
-        modalOpen.value = true
+        modalType.value = 'error';
+        modalOpen.value = true;
       }
-
     } else {
-      // Jika error 500 (Crash)
-      console.error('Server DB Error:', error.response?.data || error.message);
-      modalType.value = 'error'
-      modalOpen.value = true
+      // Tangani Error 500 atau masalah koneksi
+      console.error('Submission Error:', error.response?.data || error.message);
+      modalType.value = 'error';
+      modalOpen.value = true;
     }
 
-    refreshCaptcha()
-    form.value.captchaInput = ''
+    // Refresh captcha setiap kali terjadi error submit
+    refreshCaptcha();
+    form.value.captchaInput = '';
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
 }
 

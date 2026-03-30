@@ -1,12 +1,11 @@
-import { CALENDAR_MOCK } from '@/Mocks/calendar.mock'
+import axios from 'axios'
 
 export const getCalendarSessions = async () => {
-  // nanti ganti:
-  // return axios.get('/api/consultations/calendar')
-
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(CALENDAR_MOCK)
-    }, 500)
-  })
+  try {
+    const response = await axios.get('/api/consultations/calendar')
+    return response.data
+  } catch (error) {
+    console.error("Gagal mengambil data kalender:", error)
+    return []
+  }
 }

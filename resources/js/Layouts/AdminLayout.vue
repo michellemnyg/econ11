@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import {
   LayoutDashboard,
@@ -44,12 +44,26 @@ const pageTitle = computed(() => {
 const isActive = (name) => {
   return page.url.startsWith(name)
 }
+
+const sidebarRef = ref(null)
+
+const handleClickOutside = (event) => {
+  if (sidebarOpen.value && sidebarRef.value && !sidebarRef.value.contains(event.target)) {
+    if (!event.target.closest('button[aria-label="Buka sidebar"]')) {
+      sidebarOpen.value = false
+    }
+  }
+}
+
+onMounted(() => document.addEventListener('mousedown', handleClickOutside))
+onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
 </script>
 
 <template>
   <div class="min-h-screen bg-slate-100 flex">
     <!-- SIDEBAR -->
     <aside
+      ref="sidebarRef"
       :class="[
         'fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 transform transition-transform duration-200',
         sidebarOpen ? 'translate-x-0' : '-translate-x-full',
@@ -106,12 +120,15 @@ const isActive = (name) => {
 
       <!-- Logout -->
       <div class="absolute bottom-0 w-full border-t border-slate-200 p-4">
-        <button
+        <Link
+          href="/logout"
+          method="post"
+          as="button"
           class="flex w-full items-center gap-3 text-sm text-red-500 hover:bg-red-50 rounded-lg px-3 py-2"
         >
           <LogOut class="w-5 h-5" />
           Logout
-        </button>
+        </Link>
       </div>
     </aside>
 

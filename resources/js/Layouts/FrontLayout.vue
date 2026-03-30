@@ -232,7 +232,7 @@ const showTopics = ref(false)
             sm:flex-row sm:justify-between sm:items-center"
     >
         <p class="text-center sm:text-left">
-        © {{ new Date().getFullYear() }} Kantor Regional XI BKN
+        COPYRIGHT © {{ new Date().getFullYear() }} Kanreg XI BKN. All Rights Reserved.
         </p>
 
         <button

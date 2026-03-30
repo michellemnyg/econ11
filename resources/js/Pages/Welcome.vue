@@ -15,7 +15,6 @@ import { useConsultationFormValidation } from '@/Composables/useConsultationForm
 import { useConsultationSchedule } from '@/Composables/useConsultationSchedule'
 
 // services
-// Ubah import function sesuai nama baru di service
 import { findAsn } from '@/Services/asn.service'
 import { submitConsultation } from '@/Services/consultation.service'
 
@@ -33,10 +32,10 @@ onMounted(loadCalendar)
  * State
  */
 const nip = ref('')
-const nama = ref('') // Tambahan state Nama
+const nama = ref('')
 const asn = ref(null)
-const searchError = ref('') // Rename nipError jadi searchError biar umum
-const isSearching = ref(false) // State loading saat mencari
+const searchError = ref('')
+const isSearching = ref(false)
 const consultationResult = ref(null)
 const isSubmitting = ref(false)
 
@@ -101,9 +100,8 @@ async function cekDataAsn() {
 
   isSearching.value = true
   searchError.value = ''
-  asn.value = null // Reset hasil sebelumnya
+  asn.value = null
 
-  // Panggil service baru dengan 2 parameter
   asn.value = await findAsn(nip.value, nama.value)
 
   if (!asn.value) {

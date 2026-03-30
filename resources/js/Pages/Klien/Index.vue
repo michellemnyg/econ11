@@ -11,7 +11,6 @@ import { Input } from '@/Components/ui/input'
 import ConsultationFilterBar from '@/Components/ConsultationFilterBar.vue'
 import ConsultationPeriodModal from '@/Components/ConsultationPeriodModal.vue'
 import ConsultationAdvancedFilter from '@/Components/ConsultationAdvancedFilter.vue'
-// NEW COMPONENT
 import ConsultationTable from '@/Components/ConsultationTable.vue'
 
 // Logic & Mocks

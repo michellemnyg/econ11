@@ -151,7 +151,7 @@ const nextMonth = () => {
             bg-slate-50 p-6 text-center text-slate-500"
     >
         <p class="text-sm font-medium">
-        Belum ada sesi konsultasi tersedia
+        Belum ada sesi konsultasi yang dibooked
         </p>
         <p class="text-xs mt-1">
         Silakan pilih tanggal dan sesi melalui form di atas

@@ -6,21 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->string('nip', 20)->unique(); // Primary untuk Login Admin
             $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('username', 100)->nullable();
             $table->string('password');
+            $table->integer('level_id')->nullable(); // Relasi ke tabel level (jika masih dipakai)
+            $table->integer('unit_id')->nullable();  // Relasi ke tabel unit (jika masih dipakai)
             $table->rememberToken();
             $table->timestamps();
         });
 
+        // Default laravel tables untuk reset password & sessions
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
@@ -37,9 +37,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');

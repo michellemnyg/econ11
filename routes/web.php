@@ -7,55 +7,32 @@ use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
-| PUBLIC / DEFAULT
+| PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
-
+// Frontpage Konsultasi
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+    return Inertia::render('Welcome');
+})->name('home');
 
 /*
 |--------------------------------------------------------------------------
-| 🔓 DEV ROUTES (TANPA AUTH) — FASE 0 & 1
+| AUTHENTICATED ROUTES (ADMIN AREA)
 |--------------------------------------------------------------------------
-| ⚠️ HANYA UNTUK DEVELOPMENT
-| ⚠️ HAPUS / NONAKTIFKAN SAAT PRODUKSI
 */
+Route::middleware(['auth', 'verified'])->group(function () {
 
-Route::prefix('dev')->group(function () {
-    // Preview UI Login (tanpa logic auth)
-    Route::get('/login', function () {
-        return Inertia::render('Auth/Login');
-    });
-
-    // Preview Dashboard Admin
+    // Dashboard Admin
     Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    });
+        return Inertia::render('Dashboard'); // Pastikan ini mengarah ke file Vue dashboard yang benar
+    })->name('dashboard');
 
-    // Preview Halaman Klien
+    // Halaman Tabel Klien
     Route::get('/klien', function () {
-        return Inertia::render('Klien/Index');
-    });
-});
+        return Inertia::render('Klien/Index'); // Pastikan ini mengarah ke file Vue klien yang benar
+    })->name('klien');
 
-/*
-|--------------------------------------------------------------------------
-| 🔐 AUTHENTICATED ROUTES (REAL FLOW)
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
+    // Profile Management (Bawaan Breeze)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -66,5 +43,4 @@ Route::middleware('auth')->group(function () {
 | AUTH ROUTES (BREEZE)
 |--------------------------------------------------------------------------
 */
-
 require __DIR__ . '/auth.php';

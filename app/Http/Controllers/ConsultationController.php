@@ -41,7 +41,6 @@ class ConsultationController extends Controller
             'sesi' => $validated['sesi'],
             'email' => $validated['email'],
             'no_hp' => $validated['hp'],
-            'status' => 'akan_datang',
         ]);
 
         $jamMulai = $this->getStartTimeFromSesi($validated['sesi']);
@@ -98,9 +97,6 @@ class ConsultationController extends Controller
         return $jadwal[$sesiKode] ?? '09:00:00';
     }
 
-    /**
-     * Endpoint untuk cek ketersediaan sesi (digunakan useConsultationSchedule.js)
-     */
     public function getBookedSessions(Request $request)
     {
         $date = $request->query('date');
@@ -111,9 +107,6 @@ class ConsultationController extends Controller
         return response()->json($booked);
     }
 
-    /**
-     * Mengambil semua data konsultasi untuk kalender hero page
-     */
     public function getCalendarSessions()
     {
         $consultations = Consultation::with('petugas')->get();
@@ -155,10 +148,45 @@ class ConsultationController extends Controller
         $query = Consultation::whereBetween('tanggal', [$startDate, $endDate]);
 
         $stats = [
-            'total' => (clone $query)->count(),
-            'aktif' => (clone $query)->where('status', 'akan_datang')->count(),
-            'selesai' => (clone $query)->where('status', 'selesai')->count(),
+            'total' => 0,
+            'aktif' => 0,
+            'selesai' => 0,
         ];
+
+        $jadwalMulai = [
+            'sesi-1' => '09:00:00',
+            'sesi-2' => '10:00:00',
+            'sesi-3' => '11:00:00',
+            'sesi-4' => '14:00:00',
+            'sesi-5' => '15:00:00',
+        ];
+        $jadwalSelesai = [
+            'sesi-1' => '09:45:00',
+            'sesi-2' => '10:45:00',
+            'sesi-3' => '11:45:00',
+            'sesi-4' => '14:45:00',
+            'sesi-5' => '15:45:00',
+        ];
+
+        $now = \Carbon\Carbon::now('Asia/Makassar');
+        $allConsultationsForStats = (clone $query)->select('tanggal', 'sesi')->get();
+
+        foreach ($allConsultationsForStats as $k) {
+            $stats['total']++;
+            $startStr = $k->tanggal . ' ' . ($jadwalMulai[$k->sesi] ?? '09:00:00');
+            $endStr = $k->tanggal . ' ' . ($jadwalSelesai[$k->sesi] ?? '09:45:00');
+            
+            $start = \Carbon\Carbon::parse($startStr, 'Asia/Makassar');
+            $end = \Carbon\Carbon::parse($endStr, 'Asia/Makassar');
+            
+            if ($now >= $start && $now <= $end) {
+                $stats['aktif']++;
+            } elseif ($now < $start) {
+                $stats['aktif']++;
+            } else {
+                $stats['selesai']++;
+            }
+        }
 
         $topik = (clone $query)->selectRaw('topik_id, count(*) as jumlah')
             ->with('topik')

@@ -1,10 +1,9 @@
 import { ref, computed, watch } from 'vue'
 import { normalizeConsultationRow } from '@/Domain/Consultation/consultation.session.adapter'
+import { getTodayWitaDate } from '@/Helpers/timezone'
 
 export function useConsultationTable(source) {
   const search = ref('')
-
-  // DEFAULT KOSONG AGAR SEMUA DATA DARI DATABASE MUNCUL DI AWAL
   const periodMode = ref('default')
   const startDate = ref('')
   const endDate = ref('')
@@ -21,7 +20,6 @@ export function useConsultationTable(source) {
 
   const filteredData = computed(() => {
     return normalizedSource.value.filter((row) => {
-      // Jika start/end date kosong, anggap match (true)
       const matchTanggal = (!startDate.value || !endDate.value) ? true : (row.tanggal >= startDate.value && row.tanggal <= endDate.value)
 
       const q = search.value.toLowerCase()
@@ -38,12 +36,41 @@ export function useConsultationTable(source) {
   })
 
   const sortedData = computed(() => {
+    const today = getTodayWitaDate()
+
     return [...filteredData.value].sort((a, b) => {
-      const dateComparison = b.tanggal.localeCompare(a.tanggal)
-      if (dateComparison !== 0) return dateComparison
-      
+      const getRank = (row) => {
+        if (row.tanggal === today) {
+          if (row.status === 'berlangsung') return 1
+          if (row.status === 'akan_datang') return 2
+          return 3
+        }
+        if (row.tanggal > today) return 4
+        return 5
+      }
+
+      const rankA = getRank(a)
+      const rankB = getRank(b)
+
+      if (rankA !== rankB) {
+        return rankA - rankB
+      }
+
+      const dateA = a.tanggal
+      const dateB = b.tanggal
       const sesiA = a.sessionTime ? a.sessionTime.start : (a.sesi || '')
       const sesiB = b.sessionTime ? b.sessionTime.start : (b.sesi || '')
+
+      if (rankA === 4) {
+        if (dateA !== dateB) return dateA.localeCompare(dateB)
+        return sesiA.localeCompare(sesiB)
+      }
+
+      if (rankA === 5) {
+        if (dateA !== dateB) return dateB.localeCompare(dateA)
+        return sesiB.localeCompare(sesiA)
+      }
+
       return sesiA.localeCompare(sesiB)
     })
   })

@@ -19,7 +19,6 @@ class ConsultationResource extends JsonResource
             'nama' => $this->nama,
             'instansi' => $this->instansi ?? '-',
             'topik' => $this->topik->nama_topik ?? '-',
-            'status' => $this->status,
             'narasumber' => $this->petugas ? $this->petugas->name : null,
             'petugas' => $this->petugas ? $this->petugas->name : null,
             'deskripsiMasalah' => $this->deskripsi_masalah,

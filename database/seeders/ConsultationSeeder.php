@@ -16,7 +16,6 @@ class ConsultationSeeder extends Seeder
         ];
         $sesiList = ['sesi-1', 'sesi-2', 'sesi-3', 'sesi-4', 'sesi-5'];
 
-        // Get the narasumber user ID
         $narasumberUser = \App\Models\User::where('username', 'narasumber')->first();
         $narasumberId = $narasumberUser ? $narasumberUser->id : null;
 
@@ -51,7 +50,6 @@ class ConsultationSeeder extends Seeder
                     'sesi' => $availableSesi[$j % count($availableSesi)],
                     'email' => 'klien' . $i . '@example.com',
                     'no_hp' => '0812' . rand(10000000, 99999999),
-                    'status' => 'akan_datang',
                     'petugas_id' => $narasumberId,
                     'zoom_meeting_id' => '8' . rand(1000000000, 9999999999),
                     'zoom_link' => 'https://zoom.us/j/dummy' . $i,
@@ -83,7 +81,6 @@ class ConsultationSeeder extends Seeder
                 'sesi' => $availSesi[array_rand($availSesi)],
                 'email' => 'random' . $k . '@example.com',
                 'no_hp' => '0812' . rand(10000000, 99999999),
-                'status' => 'akan_datang',
                 'petugas_id' => null,
                 'zoom_meeting_id' => null,
                 'zoom_link' => null,

@@ -22,7 +22,6 @@ Route::get('/refresh-captcha', function() {
     return response()->json(['captcha_url' => captcha_src('flat')]);
 });
 
-// Endpoint Form & Ketersediaan Sesi
 Route::post('/api/asn/check', [AsnController::class, 'check']);
 Route::get('/api/consultations/booked', [ConsultationController::class, 'getBookedSessions']);
 Route::post('/api/consultation/submit', [ConsultationController::class, 'store']);
@@ -34,10 +33,8 @@ Route::get('/api/consultations/calendar', [ConsultationController::class, 'getCa
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Dashboard Admin
     Route::get('/dashboard', [ConsultationController::class, 'dashboardAdmin'])->name('dashboard');
 
-    // Hapus Route::get('/klien', function()...) yang lama, ganti dengan ini:
     Route::get('/klien', [App\Http\Controllers\ConsultationController::class, 'indexAdmin'])->name('klien');
     Route::patch('/klien/{id}/assign', [App\Http\Controllers\ConsultationController::class, 'assignNarasumber'])->name('klien.assign');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

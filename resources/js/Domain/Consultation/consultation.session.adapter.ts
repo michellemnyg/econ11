@@ -1,4 +1,5 @@
 import type { ConsultationRow } from './consultation.types'
+import { getNowWita } from '@/Helpers/timezone'
 
 const SESSION_MAP: Record<string, any> = {
   'sesi-1': { label: 'Sesi 1 (09:00 - 09:45)', start: '09:00', end: '09:45' },
@@ -12,7 +13,7 @@ export function parseSessionTime(sesi: string) {
   return SESSION_MAP[sesi] || null
 }
 
-export function computeConsultationStatus(row: any, now: Date = new Date()) {
+export function computeConsultationStatus(row: any, now: Date = getNowWita()) {
   const session = parseSessionTime(row.sesi)
   if (!session) return 'akan_datang'
 

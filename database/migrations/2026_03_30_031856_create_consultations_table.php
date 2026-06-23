@@ -27,7 +27,6 @@ return new class extends Migration
 
             // 3. Status & Petugas (Admin Domain)
             // Sesuai dengan ConsultationStatus di TypeScript
-            $table->enum('status', ['akan_datang', 'berlangsung', 'berlalu'])->default('akan_datang');
             $table->foreignId('petugas_id')->nullable()->constrained('users')->nullOnDelete(); // Relasi ke admin/narasumber
 
             // 4. Integrasi Zoom S2S

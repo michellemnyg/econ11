@@ -4,14 +4,13 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('pns', function (Blueprint $table) {
             $table->string('id', 36)->primary();
             $table->string('nip_lama', 9)->nullable();
-            $table->string('nip_baru', 18)->nullable()->index(); // Di-index agar pencarian NIP sangat cepat
+            $table->string('nip_baru', 20)->nullable()->index();
             $table->string('nama', 55)->nullable();
             $table->string('gelar_depan', 25)->nullable();
             $table->string('gelar_blk', 50)->nullable();
@@ -63,7 +62,7 @@ return new class extends Migration
             $table->string('nama_jabatan', 255)->nullable();
             $table->string('unor_induk_nama', 255)->nullable();
             $table->string('pendidikan_nama', 150)->nullable();
-            $table->timestamps(); // Tambahan standar laravel
+            $table->timestamps();
         });
     }
 

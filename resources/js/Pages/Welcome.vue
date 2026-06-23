@@ -2,7 +2,7 @@
 import FrontLayout from '@/Layouts/FrontLayout.vue'
 import { Head } from '@inertiajs/vue3'
 import { ref, onMounted, computed, watch } from 'vue'
-import { Search, RefreshCcw, Calendar, User, FileText } from 'lucide-vue-next'
+import { Search, RefreshCcw, User, FileText } from 'lucide-vue-next'
 import ConsultationFeedbackModal from '@/Components/app/modals/ConsultationFeedbackModal.vue'
 import ConsultationCalendar from '@/Components/app/calendar/ConsultationCalendar.vue'
 import ConsultationSessionDetailModal from '@/Components/app/modals/ConsultationSessionDetailModal.vue'
@@ -16,13 +16,14 @@ import { useConsultationSchedule } from '@/Composables/useConsultationSchedule'
 // services
 import { findAsn } from '@/Services/asn.service'
 import { submitConsultation } from '@/Services/consultation.service'
+import { checkIsHoliday } from '@/Services/holiday.service'
 
 // mocks
 import { CONSULTATION_TOPICS } from '@/Mocks/consultation-topics.mock'
 
 import axios from 'axios'
 
-// BARU: Terima props dari Laravel (URL awal gambar captcha)
+// Terima props dari Laravel (URL awal gambar captcha)
 const props = defineProps({
   captcha_url: {
     type: String,
@@ -36,6 +37,8 @@ const props = defineProps({
 const { addBookedSession, loadCalendar } = useCalendarStore()
 
 onMounted(loadCalendar)
+
+const calendarRef = ref(null)
 
 /**
  * State
@@ -98,8 +101,19 @@ const canSearch = computed(() => {
   return nip.value.length > 0 && nama.value.length > 0
 })
 
+const selectedHolidayInfo = computed(() => {
+  if (!form.value.tanggal) return null
+  return checkIsHoliday(form.value.tanggal)
+})
+
+const isWeekend = computed(() => {
+  if (!form.value.tanggal) return false
+  const day = new Date(form.value.tanggal).getDay()
+  return day === 0 || day === 6
+})
+
 /**
- * BARU: Methods Captcha Server-Side
+ * Methods Captcha Server-Side
  */
 const captchaImgUrl = ref(props.captcha_url)
 
@@ -140,7 +154,7 @@ async function submitForm() {
   if (!validate() || isSubmitting.value) return;
 
   isSubmitting.value = true;
-  clearErrors(); // Bersihkan sisa error validasi sebelumnya
+  clearErrors();
 
   // Siapkan data lengkap untuk dikirim ke Laravel
   const payload = {
@@ -238,7 +252,7 @@ function resetForm() {
     captchaInput: '',
   }
 
-  refreshCaptcha() // BARU
+  refreshCaptcha()
 }
 
 function handleModalClose() {
@@ -247,7 +261,7 @@ function handleModalClose() {
   if (modalType.value === 'success') {
     resetForm()
   } else {
-    refreshCaptcha() // BARU
+    refreshCaptcha()
     form.value.captchaInput = ''
   }
 }
@@ -259,16 +273,6 @@ const formSection = ref(null)
 
 const scrollToForm = () => {
   formSection.value?.scrollIntoView({ behavior: 'smooth' })
-}
-
-const scrollToCalendar = () => {
-  const el = document.getElementById('calendar')
-  if (!el) return
-
-  el.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start',
-  })
 }
 </script>
 
@@ -403,30 +407,26 @@ const scrollToCalendar = () => {
                             </div>
 
                             <div>
-                            <label class="text-sm font-medium text-slate-700">Sesi</label>
-                            <select
-                                v-model="form.sesi"
-                                class="w-full mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                            >
-                                <option value="">Pilih sesi</option>
-                                <option
-                                v-for="session in availableSessions"
-                                :key="session.value"
-                                :value="session.value"
-                                :disabled="session.disabled"
+                                <label class="text-sm font-medium text-slate-700">Sesi</label>
+                                <select
+                                    v-model="form.sesi"
+                                    class="w-full mt-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                                    :disabled="selectedHolidayInfo || isWeekend"
                                 >
-                                {{ session.label }}
-                                </option>
-                            </select>
-
-                            <button
-                                type="button"
-                                @click="scrollToCalendar"
-                                class="mt-2 text-xs text-red-600 hover:text-red-800 flex items-center gap-1 font-medium"
-                            >
-                                <Calendar class="w-3 h-3" />
-                                Cek Jadwal Tersedia
-                            </button>
+                                    <option v-if="selectedHolidayInfo" value="">Tutup: {{ selectedHolidayInfo.name }}</option>
+                                    <option v-else-if="isWeekend" value="">Tutup: Libur Akhir Pekan</option>
+                                    <template v-else>
+                                        <option value="">Pilih sesi</option>
+                                        <option
+                                        v-for="session in availableSessions"
+                                        :key="session.value"
+                                        :value="session.value"
+                                        :disabled="session.disabled"
+                                        >
+                                        {{ session.label }}
+                                        </option>
+                                    </template>
+                                </select>
                             </div>
                         </div>
 
@@ -507,6 +507,7 @@ const scrollToCalendar = () => {
     <template #content>
       <section ref="calendarSection" class="max-w-7xl mx-auto px-6">
         <ConsultationCalendar
+          ref="calendarRef"
           @select-session="openSessionDetail"
         />
       </section>

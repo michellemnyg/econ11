@@ -14,7 +14,6 @@ class ConsultationController extends Controller
 {
     public function store(Request $request, ZoomService $zoomService)
     {
-        // 1. Validasi Input + Captcha
         $validated = $request->validate([
             'nip' => 'required|string',
             'nama' => 'required|string',
@@ -31,7 +30,6 @@ class ConsultationController extends Controller
             'captchaInput.captcha' => 'Kode Keamanan (Captcha) yang Anda masukkan salah atau kadaluarsa.'
         ]);
 
-        // 2. Simpan Data Awal ke Database
         $consultation = Consultation::create([
             'nip' => $validated['nip'],
             'nama' => $validated['nama'],
@@ -46,14 +44,12 @@ class ConsultationController extends Controller
             'status' => 'akan_datang',
         ]);
 
-        // 3. Konversi Sesi ke Jam untuk Zoom
         $jamMulai = $this->getStartTimeFromSesi($validated['sesi']);
         $zoomStartTime = $validated['tanggal'] . 'T' . $jamMulai;
 
         $topik = Topik::find($validated['topik']);
         $judulZoom = 'Konsultasi BKN: ' . ($topik ? $topik->nama_topik : $validated['nama']);
 
-        // 4. Generate Zoom Meeting
         try {
             $zoomData = $zoomService->createMeeting($judulZoom, $zoomStartTime);
 
@@ -69,14 +65,12 @@ class ConsultationController extends Controller
             Log::error('ZOOM API ERROR: ' . $e->getMessage());
         }
 
-        // 5. KIRIM EMAIL (Queue otomatis karena kita pakai ShouldQueue di Mailable)
         try {
             Mail::to($consultation->email)->send(new ConsultationMail($consultation));
         } catch (\Exception $e) {
             Log::error('EMAIL ERROR: ' . $e->getMessage());
         }
 
-        // 6. Response ke Frontend
         return response()->json([
             'success' => true,
             'message' => 'Permintaan konsultasi berhasil dikirim!',
@@ -122,13 +116,10 @@ class ConsultationController extends Controller
      */
     public function getCalendarSessions()
     {
-        // 1. Ambil SEMUA data tanpa filter status, agar semua muncul di kalender.
-        $consultations = Consultation::all();
+        $consultations = Consultation::with('petugas')->get();
 
-        // 2. Ambil semua topik sebagai array dictionary untuk mencegah Error 500 (Relasi)
         $topiks = Topik::pluck('nama_topik', 'id')->toArray();
 
-        // 3. Siapkan label sesi
         $labels = [
             'sesi-1' => 'Sesi 1 (09:00 - 09:45)',
             'sesi-2' => 'Sesi 2 (10:00 - 10:45)',
@@ -137,7 +128,6 @@ class ConsultationController extends Controller
             'sesi-5' => 'Sesi 5 (15:00 - 15:45)',
         ];
 
-        // 4. Kelompokkan berdasarkan tanggal dan format untuk Vue
         $formatted = $consultations->groupBy('tanggal')->map(function ($items, $date) use ($labels, $topiks) {
             return [
                 'tanggal' => $date,
@@ -145,8 +135,7 @@ class ConsultationController extends Controller
                     return [
                         'value' => $item->sesi,
                         'label' => $labels[$item->sesi] ?? $item->sesi,
-                        'narasumber' => $item->narasumber ?? 'Menunggu Plotting',
-                        // Jika topik tidak ditemukan, tampilkan teks default
+                        'narasumber' => $item->petugas->name ?? 'Menunggu Plotting',
                         'topik' => $topiks[$item->topik_id] ?? 'Konsultasi Kepegawaian',
                         'link' => $item->zoom_link,
                         'passcode' => $item->zoom_passcode,
@@ -158,26 +147,19 @@ class ConsultationController extends Controller
         return response()->json($formatted);
     }
 
-    /**
-     * MENGIRIM DATA STATISTIK KE HALAMAN DASHBOARD ADMIN
-     */
     public function dashboardAdmin(Request $request)
     {
-        // 1. Ambil rentang tanggal dari request, default: minggu ini
         $startDate = $request->query('start_date', now()->startOfWeek()->toDateString());
         $endDate = $request->query('end_date', now()->endOfWeek()->toDateString());
 
-        // 2. Buat query dasar berdasarkan rentang tanggal
         $query = Consultation::whereBetween('tanggal', [$startDate, $endDate]);
 
-        // 3. Hitung Statistik Utama
         $stats = [
             'total' => (clone $query)->count(),
             'aktif' => (clone $query)->where('status', 'akan_datang')->count(),
             'selesai' => (clone $query)->where('status', 'selesai')->count(),
         ];
 
-        // 4. Hitung Topik Populer (Top 5)
         $topik = (clone $query)->selectRaw('topik_id, count(*) as jumlah')
             ->with('topik')
             ->groupBy('topik_id')
@@ -191,7 +173,6 @@ class ConsultationController extends Controller
                 ];
             });
 
-        // 5. Hitung Instansi Terbanyak (Top 5)
         $instansi = (clone $query)->selectRaw('instansi as nama, count(*) as jumlah')
             ->whereNotNull('instansi')
             ->groupBy('instansi')
@@ -199,14 +180,14 @@ class ConsultationController extends Controller
             ->limit(5)
             ->get();
 
-        // 6. Hitung Kinerja Narasumber
-        $kinerja = (clone $query)->selectRaw('narasumber as nama, count(*) as jumlah')
-            ->whereNotNull('narasumber')
-            ->groupBy('narasumber')
+        $kinerja = (clone $query)
+            ->join('users', 'consultations.petugas_id', '=', 'users.id')
+            ->selectRaw('users.name as nama, count(consultations.id) as jumlah')
+            ->whereNotNull('consultations.petugas_id')
+            ->groupBy('users.id', 'users.name')
             ->orderByDesc('jumlah')
             ->get();
 
-        // 7. Kirim data yang sudah matang ke Vue (Inertia)
         return inertia('Dashboard', [
             'filters' => [
                 'start_date' => $startDate,
@@ -221,20 +202,13 @@ class ConsultationController extends Controller
 
     public function indexAdmin()
     {
-        $klien = \App\Models\Consultation::with('topik')->orderBy('created_at', 'desc')->get();
+        $klien = \App\Models\Consultation::with(['topik', 'petugas'])->orderBy('created_at', 'desc')->get();
         $formattedData = \App\Http\Resources\ConsultationResource::collection($klien);
 
-        // AMBIL DATA NARASUMBER DARI DATABASE
-        $narasumberList = [];
-        if (\Illuminate\Support\Facades\Schema::hasTable('narasumbers')) {
-            $narasumberList = \App\Models\Narasumber::select('nama', 'unit')->orderBy('nama', 'asc')->get();
-        } else {
-            $narasumberList = [
-                ['nama' => 'Budi Santoso', 'unit' => 'Tim Manajemen Kinerja'],
-                ['nama' => 'Siti Aminah', 'unit' => 'Tim Pengadaan'],
-                ['nama' => 'Andi Wijaya', 'unit' => 'Tim Disiplin'],
-            ];
-        }
+        $narasumberList = \App\Models\User::where('level_id', 4)
+            ->select('id', 'name as nama')
+            ->orderBy('name', 'asc')
+            ->get();
 
         return inertia('Klien/Index', [
             'klienData' => $formattedData,
@@ -242,16 +216,15 @@ class ConsultationController extends Controller
         ]);
     }
 
-    // FUNGSI BARU UNTUK MENYIMPAN ASSIGNMENT KE DATABASE
     public function assignNarasumber(\Illuminate\Http\Request $request, $id)
     {
         $request->validate([
-            'narasumber' => 'required|string|max:255'
+            'narasumber' => 'required'
         ]);
 
         $consultation = \App\Models\Consultation::findOrFail($id);
         $consultation->update([
-            'narasumber' => $request->narasumber
+            'petugas_id' => $request->narasumber
         ]);
 
         return redirect()->back()->with('success', 'Narasumber berhasil ditugaskan.');

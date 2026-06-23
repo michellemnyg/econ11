@@ -24,6 +24,55 @@ class PnsSeeder extends Seeder
                 'nama' => 'Rina Kurniasih',
                 'nama_jabatan' => 'Pranata Komputer Ahli Muda',
                 'unor_induk_nama' => 'BKD Kota Bandung',
+            ],
+            [
+                'id' => Str::uuid(),
+                'nip_baru' => 'nip',
+                'nama' => 'nama',
+                'nama_jabatan' => 'Pegawai Dummy',
+                'unor_induk_nama' => 'Instansi Dummy',
+            ],
+            [
+                'id' => Str::uuid(),
+                'nip_baru' => 'superadmin',
+                'nama' => 'Super Admin',
+                'nama_jabatan' => 'Super Admin',
+                'unor_induk_nama' => 'BKN',
+            ],
+            [
+                'id' => Str::uuid(),
+                'nip_baru' => 'ketuatim',
+                'nama' => 'Ketua Tim',
+                'nama_jabatan' => 'Ketua Tim',
+                'unor_induk_nama' => 'BKN',
+            ],
+            [
+                'id' => Str::uuid(),
+                'nip_baru' => 'operator',
+                'nama' => 'Operator',
+                'nama_jabatan' => 'Operator',
+                'unor_induk_nama' => 'BKN',
+            ],
+            [
+                'id' => Str::uuid(),
+                'nip_baru' => 'narasumber',
+                'nama' => 'Narasumber',
+                'nama_jabatan' => 'Narasumber',
+                'unor_induk_nama' => 'BKN',
+            ],
+            [
+                'id' => Str::uuid(),
+                'nip_baru' => 'narasumber2',
+                'nama' => 'Narasumber Dua',
+                'nama_jabatan' => 'Narasumber',
+                'unor_induk_nama' => 'BKN',
+            ],
+            [
+                'id' => Str::uuid(),
+                'nip_baru' => 'narasumber3',
+                'nama' => 'Narasumber Tiga',
+                'nama_jabatan' => 'Narasumber',
+                'unor_induk_nama' => 'BKN',
             ]
         ];
 

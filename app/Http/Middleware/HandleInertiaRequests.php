@@ -31,7 +31,6 @@ class HandleInertiaRequests extends Middleware
     {
         $user = $request->user();
 
-        // KUNCI UTAMA: Jika ada user yang login, muat data level-nya dari database
         if ($user) {
             $user->load('level');
         }
@@ -39,12 +38,11 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                // Format ulang data user sebelum dikirim ke Vue
                 'user' => $user ? [
                     'id' => $user->id,
                     'name' => $user->name,
                     'nip' => $user->nip,
-                    // Ubah nama_level menjadi 'role' agar Vue mudah membacanya
+                    'level_id' => $user->level_id,
                     'role' => $user->level->nama_level ?? 'Operator',
                 ] : null,
             ],

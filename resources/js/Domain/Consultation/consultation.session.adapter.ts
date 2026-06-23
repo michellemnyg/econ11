@@ -29,14 +29,11 @@ export function normalizeConsultationRow(row: any): ConsultationRow {
 
   return {
     ...row,
-    // Gunakan label cantik untuk UI
     sesi: sessionTime ? sessionTime.label : row.sesi,
     sessionTime: sessionTime || undefined,
 
-    // PENTING: Map narasumber dari Laravel menjadi petugas untuk tabel Vue
     petugas: row.narasumber || null,
 
-    // Hitung status real-time untuk badge di tabel
     status: computeConsultationStatus(row)
   }
 }

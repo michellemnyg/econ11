@@ -9,11 +9,10 @@ class Consultation extends Model
 {
     use HasFactory;
 
-    // Pastikan semua kolom yang ada di database diizinkan untuk diisi (Mass Assignment)
     protected $fillable = [
         'nip', 'nama', 'jabatan', 'instansi', 'topik_id',
         'deskripsi_masalah', 'tanggal', 'sesi', 'email', 'no_hp',
-        'status', 'narasumber', 'zoom_meeting_id', 'zoom_link', 'zoom_passcode'
+        'status', 'petugas_id', 'zoom_meeting_id', 'zoom_link', 'zoom_passcode'
     ];
 
     /**
@@ -21,7 +20,14 @@ class Consultation extends Model
      */
     public function topik()
     {
-        // belongsTo karena tabel consultations memiliki foreign key topik_id
         return $this->belongsTo(Topik::class, 'topik_id');
+    }
+
+    /**
+     * Relasi ke tabel Users (Petugas/Narasumber)
+     */
+    public function petugas()
+    {
+        return $this->belongsTo(User::class, 'petugas_id');
     }
 }

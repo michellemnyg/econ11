@@ -74,7 +74,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
           ]"
         >
           <Users class="w-5 h-5" :class="isActive('/klien') ? 'text-blue-600' : 'text-slate-400'" />
-          Klien / Konsultasi
+          Klien
         </Link>
       </nav>
 
@@ -86,7 +86,7 @@ onUnmounted(() => document.removeEventListener('mousedown', handleClickOutside))
           class="flex w-full items-center gap-3 text-sm font-bold text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl px-4 py-2.5 transition-colors"
         >
           <LogOut class="w-5 h-5" />
-          Keluar Sistem
+          Keluar
         </Link>
       </div>
     </aside>

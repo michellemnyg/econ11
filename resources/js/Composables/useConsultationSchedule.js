@@ -6,8 +6,11 @@ import {
 } from '@/Helpers/dateTimeRules'
 import { getTodayWitaDate } from '@/Helpers/timezone'
 import { getBookedSessionsByDate } from '@/Services/booking.service'
+import { fetchHolidays, checkIsHoliday } from '@/Services/holiday.service'
 
 export function useConsultationSchedule(form) {
+  // Ambil data hari libur di background
+  fetchHolidays()
   const sessions = [
     { label: 'Sesi 1 (09:00 - 09:45)', value: 'sesi-1', start: '09:00' },
     { label: 'Sesi 2 (10:00 - 10:45)', value: 'sesi-2', start: '10:00' },
@@ -47,6 +50,9 @@ export function useConsultationSchedule(form) {
 
       // ❌ BARU: Libur Sabtu (6) dan Minggu (0)
       if (dayOfWeek === 0 || dayOfWeek === 6) disabled = true
+
+      // ❌ BARU: Libur Nasional / Cuti Bersama
+      if (checkIsHoliday(form.value.tanggal)) disabled = true
 
       // ❌ tanggal lampau
       if (isPastDate(form.value.tanggal)) disabled = true

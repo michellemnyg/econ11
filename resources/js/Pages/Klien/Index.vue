@@ -1,8 +1,10 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import { Head, router } from '@inertiajs/vue3'
+import { Head, router, usePage } from '@inertiajs/vue3'
 import { ref, computed, watch } from 'vue'
 import { Link as LinkIcon } from 'lucide-vue-next'
+
+const userRole = computed(() => usePage().props.auth.user?.level_id)
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/Components/ui/dialog'
 import { Button } from '@/Components/ui/button'
@@ -24,10 +26,8 @@ const props = defineProps({
 
 const { copy, toastMessage, showToast } = useClipboardToast()
 
-// State Data Klien
 const klienList = ref(Array.isArray(props.klienData) ? props.klienData : (props.klienData?.data || []))
 
-// KUNCI AUTO-RELOAD: Pantau perubahan props dari Laravel dan langsung update tabel
 watch(() => props.klienData, (newData) => {
   klienList.value = Array.isArray(newData) ? newData : (newData?.data || [])
 }, { deep: true })
@@ -62,21 +62,20 @@ function applyAdvancedFilter({ instansi, status }) {
 }
 
 const openAssign = (row) => {
-    selectedKlien.value = klienList.value.find( k => k.id === row.id )
+    selectedKlien.value = row
     selectedPetugas.value = null
     showAssignModal.value = true
 }
 
 const openDetail = (row) => {
-    selectedKlien.value = klienList.value.find( k => k.id === row.id )
+    selectedKlien.value = row
     showDetailModal.value = true
 }
 
-const assignPetugas = (nama) => {
-    if (!selectedKlien.value || !nama) return
+const assignPetugas = (id) => {
+    if (!selectedKlien.value || !id) return
 
-    // Tembak data ke API Laravel dan biarkan halaman refresh datanya tanpa kedip
-    router.patch(`/klien/${selectedKlien.value.id}/assign`, { narasumber: nama }, {
+    router.patch(`/klien/${selectedKlien.value.id}/assign`, { narasumber: id }, {
         preserveScroll: true,
         onSuccess: () => {
             showAssignModal.value = false
@@ -125,7 +124,7 @@ const pageEnd = computed(() => {
       :total-items="klienList.length"
       :page-start="pageStart"
       :page-end="pageEnd"
-      role="admin"
+      :role="userRole === 3 ? 'ketua_tim' : 'admin'"
       @update:currentPage="currentPage = $event"
       @update:perPage="perPage = $event"
       @open-assign="openAssign"
@@ -142,13 +141,13 @@ const pageEnd = computed(() => {
 
         <Input placeholder="Cari nama narasumber..." v-model="searchPetugas" class="mb-3" />
         <div class="space-y-2 max-h-60 overflow-y-auto pr-2">
-          <div v-for="p in props.narasumberList" :key="p.nama" class="flex justify-between items-center border rounded-xl p-3 hover:bg-slate-50 hover:border-blue-200 transition-all cursor-pointer" @click="selectedPetugas = p.nama">
+          <div v-for="p in props.narasumberList" :key="p.id" class="flex justify-between items-center border rounded-xl p-3 hover:bg-slate-50 hover:border-blue-200 transition-all cursor-pointer" @click="selectedPetugas = p.id">
             <div>
               <p class="font-bold text-slate-800">{{ p.nama }}</p>
               <p class="text-xs text-slate-500 font-medium">{{ p.unit }}</p>
             </div>
-            <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors" :class="selectedPetugas === p.nama ? 'border-blue-600 bg-blue-600' : 'border-slate-300'">
-              <div v-if="selectedPetugas === p.nama" class="w-2 h-2 bg-white rounded-full"></div>
+            <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors" :class="selectedPetugas === p.id ? 'border-blue-600 bg-blue-600' : 'border-slate-300'">
+              <div v-if="selectedPetugas === p.id" class="w-2 h-2 bg-white rounded-full"></div>
             </div>
           </div>
         </div>

@@ -42,7 +42,8 @@ const getTopicColor = (topicInput) => {
           <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
             <tr>
               <th class="px-5 py-3.5 text-left font-semibold text-xs uppercase tracking-wider">Status</th>
-              <th class="px-4 py-3.5 text-left font-semibold text-xs uppercase tracking-wider">Jadwal</th>
+              <th class="px-4 py-3.5 text-left font-semibold text-xs uppercase tracking-wider">Tanggal</th>
+              <th class="px-4 py-3.5 text-left font-semibold text-xs uppercase tracking-wider">Sesi</th>
               <th class="px-4 py-3.5 text-left font-semibold text-xs uppercase tracking-wider">Klien</th>
               <th class="px-4 py-3.5 text-left font-semibold text-xs uppercase tracking-wider">Topik & Instansi</th>
               <th class="px-4 py-3.5 text-left font-semibold text-xs uppercase tracking-wider">Narasumber</th>
@@ -52,7 +53,7 @@ const getTopicColor = (topicInput) => {
           </thead>
           <tbody class="divide-y divide-slate-100 bg-white">
             <tr v-if="data.length === 0">
-              <td colspan="7" class="px-4 py-16 text-center text-slate-500">
+              <td colspan="8" class="px-4 py-16 text-center text-slate-500">
                 <div class="flex flex-col items-center justify-center">
                   <Ban class="w-8 h-8 text-slate-300 mb-2" />
                   <p class="font-medium text-slate-600">Tidak ada data konsultasi</p>
@@ -67,10 +68,10 @@ const getTopicColor = (topicInput) => {
               <td class="px-5 py-4 align-middle whitespace-nowrap"><ConsultationStatusBadge :status="k.status" /></td>
 
               <td class="px-4 py-4 align-middle whitespace-nowrap">
-                <div class="flex flex-col gap-1">
-                  <span class="font-medium text-slate-700">{{ k.tanggal }}</span>
-                  <span class="text-xs text-slate-500">{{ k.sesi.split('(')[0] }}</span>
-                </div>
+                <span class="font-medium text-slate-700">{{ k.tanggal }}</span>
+              </td>
+              <td class="px-4 py-4 align-middle whitespace-nowrap">
+                <span class="text-sm font-medium text-slate-700">{{ k.sesi }}</span>
               </td>
 
               <td class="px-4 py-4 align-middle">
@@ -110,7 +111,7 @@ const getTopicColor = (topicInput) => {
 
               <td class="px-4 py-4 align-middle text-center">
                 <div class="flex items-center justify-center gap-1">
-                  <Button v-if="role !== 'narasumber'" variant="ghost" size="sm" class="h-8 w-8 p-0 text-slate-500 hover:text-blue-600" @click="$emit('open-assign', k)" title="Assign Petugas">
+                  <Button v-if="role === 'ketua_tim'" variant="ghost" size="sm" class="h-8 w-8 p-0 text-slate-500 hover:text-blue-600" @click="$emit('open-assign', k)" title="Assign Petugas">
                     <UserPlus class="w-4 h-4" />
                   </Button>
                   <Button variant="ghost" size="sm" class="h-8 w-8 p-0 text-slate-500 hover:text-slate-900" @click="$emit('open-detail', k)" title="Lihat Detail">
@@ -129,9 +130,9 @@ const getTopicColor = (topicInput) => {
        <div v-for="k in data" :key="k.id" class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm space-y-3">
           <div class="flex justify-between items-start">
              <ConsultationStatusBadge :status="k.status" />
-             <div class="text-xs text-slate-500 flex flex-col items-end">
+              <div class="text-xs text-slate-500 flex flex-col items-end">
                 <span class="flex items-center gap-1"><Calendar class="w-3 h-3"/> {{ k.tanggal }}</span>
-                <span class="font-medium text-slate-700">{{ k.sesi.split('(')[0] }}</span>
+                <span class="font-medium text-slate-700">{{ k.sesi }}</span>
              </div>
           </div>
           <div class="space-y-1">
@@ -147,7 +148,7 @@ const getTopicColor = (topicInput) => {
              </div>
           </div>
           <div class="grid grid-cols-2 gap-2 pt-1">
-             <Button v-if="role !== 'narasumber'" variant="outline" size="sm" class="w-full text-xs h-8" @click="$emit('open-assign', k)">Assign</Button>
+             <Button v-if="role === 'ketua_tim'" variant="outline" size="sm" class="w-full text-xs h-8" @click="$emit('open-assign', k)">Assign</Button>
              <Button variant="secondary" size="sm" class="w-full text-xs h-8 bg-slate-100 hover:bg-slate-200" @click="$emit('open-detail', k)">Detail</Button>
           </div>
        </div>

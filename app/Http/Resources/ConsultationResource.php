@@ -20,7 +20,8 @@ class ConsultationResource extends JsonResource
             'instansi' => $this->instansi ?? '-',
             'topik' => $this->topik->nama_topik ?? '-',
             'status' => $this->status,
-            'narasumber' => $this->narasumber,
+            'narasumber' => $this->petugas ? $this->petugas->name : null,
+            'petugas' => $this->petugas ? $this->petugas->name : null,
             'deskripsiMasalah' => $this->deskripsi_masalah,
             'integrasi' => [
                 'linkZoom' => $this->zoom_link,

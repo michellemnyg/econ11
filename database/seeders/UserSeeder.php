@@ -10,12 +10,59 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::create([
-            'nip' => '198901012019031001', // NIP Admin Tester
-            'name' => 'Admin Super econ11',
-            'username' => 'admin_econ11',
-            'password' => Hash::make('password123'), // Password default
-            'level_id' => 1,
-        ]);
+        $users = [
+            [
+                'nip' => 'superadmin',
+                'name' => 'Super Admin',
+                'username' => 'superadmin',
+                'password' => Hash::make('pass'),
+                'level_id' => 1,
+                'unit_id' => 1,
+            ],
+            [
+                'nip' => 'operator',
+                'name' => 'Operator',
+                'username' => 'operator',
+                'password' => Hash::make('pass'),
+                'level_id' => 2,
+                'unit_id' => 1,
+            ],
+            [
+                'nip' => 'ketuatim',
+                'name' => 'Ketua Tim',
+                'username' => 'ketuatim',
+                'password' => Hash::make('pass'),
+                'level_id' => 3,
+                'unit_id' => 1,
+            ],
+            [
+                'nip' => 'narasumber',
+                'name' => 'Narasumber',
+                'username' => 'narasumber',
+                'password' => Hash::make('pass'),
+                'level_id' => 4,
+                'unit_id' => 1,
+            ],
+            [
+                'nip' => 'narasumber2',
+                'name' => 'Narasumber Dua',
+                'username' => 'narasumber2',
+                'password' => Hash::make('pass'),
+                'level_id' => 4,
+                'unit_id' => 1,
+            ],
+            [
+                'nip' => 'narasumber3',
+                'name' => 'Narasumber Tiga',
+                'username' => 'narasumber3',
+                'password' => Hash::make('pass'),
+                'level_id' => 4,
+                'unit_id' => 1,
+            ]
+        ];
+
+        foreach ($users as $user) {
+            User::create($user);
+        }
     }
 }

@@ -20,7 +20,7 @@ const monthLabel = computed(() =>
 
 const getSessionsByDate = (date) => {
   const day = calendarSessions.value.find(d => d.tanggal === date)
-  return day ? day.sesi : []
+  return day ? [...day.sesi].sort((a, b) => a.value.localeCompare(b.value)) : []
 }
 
 const daysInMonth = computed(() => {
@@ -33,8 +33,11 @@ const daysInMonth = computed(() => {
   const startOffset = (firstDay.getDay() + 6) % 7
   const days = []
 
+  const todayObj = new Date()
+  const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`
+
   for (let i = 0; i < startOffset; i++) {
-    days.push({ date: null, day: '', sessions: [], empty: true })
+    days.push({ date: null, day: '', sessions: [], empty: true, isToday: false })
   }
 
   for (let d = 1; d <= lastDay.getDate(); d++) {
@@ -44,6 +47,7 @@ const daysInMonth = computed(() => {
       day: d,
       sessions: getSessionsByDate(dateStr),
       empty: false,
+      isToday: dateStr === todayStr,
     })
   }
 
@@ -68,6 +72,18 @@ const prevMonth = () => {
 const nextMonth = () => {
   currentMonth.value = new Date(currentMonth.value.getFullYear(), currentMonth.value.getMonth() + 1, 1)
 }
+const goToToday = () => {
+  currentMonth.value = new Date()
+}
+
+const goToDate = (dateStr) => {
+  if (dateStr) {
+    const d = new Date(dateStr)
+    currentMonth.value = new Date(d.getFullYear(), d.getMonth(), 1)
+  }
+}
+
+defineExpose({ goToToday, goToDate })
 </script>
 
 <template>
@@ -85,6 +101,9 @@ const nextMonth = () => {
       </div>
 
       <div class="flex items-center gap-2">
+        <button @click="goToToday" class="px-4 py-2 text-sm font-semibold rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-blue-300 text-slate-700 transition shadow-sm">
+          Hari Ini
+        </button>
         <button @click="prevMonth" class="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-blue-300 text-slate-600 transition shadow-sm">
           <ChevronLeft class="w-5 h-5" />
         </button>
@@ -104,7 +123,8 @@ const nextMonth = () => {
         </div>
 
         <div v-else class="space-y-4">
-          <div v-for="d in daysWithSessions" :key="d.date" class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+          <div v-for="d in daysWithSessions" :key="d.date" class="rounded-2xl border border-slate-100 bg-slate-50 p-4 relative" :class="{ 'ring-2 ring-blue-500 bg-blue-50/30': d.isToday }">
+            <div v-if="d.isToday" class="absolute -top-2.5 right-4 bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">HARI INI</div>
             <p class="text-sm font-bold text-slate-800 mb-3 border-b border-slate-200 pb-2">
               {{ d.dayName }}, <span class="text-slate-500 font-medium">{{ d.date }}</span>
             </p>
@@ -141,17 +161,21 @@ const nextMonth = () => {
           <div
             v-for="(d, i) in daysInMonth"
             :key="i"
-            class="min-h-[160px] bg-white p-3 transition-colors hover:bg-slate-50/80 group"
-            :class="{ 'bg-slate-50/30': d.empty }"
+            class="min-h-[160px] bg-white p-3 transition-colors hover:bg-slate-50/80 group relative"
+            :class="{ 'bg-slate-50/30': d.empty, 'bg-blue-50/10': d.isToday }"
           >
             <template v-if="!d.empty">
               <div class="flex justify-between items-center mb-3">
                 <span
-                  class="text-sm font-bold flex items-center justify-center w-7 h-7 rounded-full transition-colors group-hover:bg-blue-100 group-hover:text-blue-700"
-                  :class="i % 7 === 6 ? 'text-red-500' : 'text-slate-700'"
+                  class="text-sm font-bold flex items-center justify-center w-7 h-7 rounded-full transition-colors"
+                  :class="[
+                    d.isToday ? 'bg-blue-600 text-white shadow-md shadow-blue-200' :
+                    (i % 7 === 6 ? 'text-red-500 group-hover:bg-blue-100 group-hover:text-blue-700' : 'text-slate-700 group-hover:bg-blue-100 group-hover:text-blue-700')
+                  ]"
                 >
                   {{ d.day }}
                 </span>
+                <span v-if="d.isToday" class="text-[9px] font-bold text-blue-600 uppercase tracking-widest bg-blue-100 px-1.5 py-0.5 rounded">Hari Ini</span>
               </div>
 
               <div class="space-y-1.5 max-h-[110px] overflow-y-auto custom-scrollbar pr-1">

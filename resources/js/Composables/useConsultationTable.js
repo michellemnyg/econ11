@@ -38,7 +38,14 @@ export function useConsultationTable(source) {
   })
 
   const sortedData = computed(() => {
-    return [...filteredData.value].sort((a, b) => b.tanggal.localeCompare(a.tanggal))
+    return [...filteredData.value].sort((a, b) => {
+      const dateComparison = b.tanggal.localeCompare(a.tanggal)
+      if (dateComparison !== 0) return dateComparison
+      
+      const sesiA = a.sessionTime ? a.sessionTime.start : (a.sesi || '')
+      const sesiB = b.sessionTime ? b.sessionTime.start : (b.sesi || '')
+      return sesiA.localeCompare(sesiB)
+    })
   })
 
   const totalPages = computed(() => Math.ceil(sortedData.value.length / perPage.value))

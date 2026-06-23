@@ -10,8 +10,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             LevelSeeder::class,
             UnitSeeder::class,
+            PnsSeeder::class,
             TopikSeeder::class,
-            UserSeeder::class, // File yang kamu buat sebelumnya tidak perlu dihapus
+            UserSeeder::class,
+            ConsultationSeeder::class,
         ]);
     }
 }

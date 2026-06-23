@@ -1,5 +1,7 @@
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3'
+import { ref } from 'vue'
+import { Eye, EyeOff } from 'lucide-vue-next'
 
 defineProps({
   canResetPassword: Boolean,
@@ -11,6 +13,8 @@ const form = useForm({
   password: '',
   remember: false,
 })
+
+const showPassword = ref(false)
 
 const submit = () => {
   form.post(route('login'), {
@@ -73,13 +77,24 @@ const submit = () => {
 
           <div class="space-y-1.5">
             <label class="block text-sm font-bold text-slate-700">Password</label>
-            <input
-              type="password"
-              v-model="form.password"
-              placeholder="••••••••"
-              class="w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500 bg-slate-50 transition-colors shadow-sm"
-              required
-            />
+            <div class="relative">
+              <input
+                :type="showPassword ? 'text' : 'password'"
+                v-model="form.password"
+                placeholder="Masukkan Password Anda"
+                class="w-full rounded-xl border-slate-200 px-4 py-3 text-sm focus:border-blue-500 focus:ring-blue-500 bg-slate-50 transition-colors shadow-sm pr-11"
+                required
+              />
+              <button 
+                type="button" 
+                @click="showPassword = !showPassword" 
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 focus:outline-none p-1 rounded-md transition-colors"
+                title="Toggle Show Password"
+              >
+                <Eye v-if="!showPassword" class="w-5 h-5" />
+                <EyeOff v-else class="w-5 h-5" />
+              </button>
+            </div>
             <p v-if="form.errors.password" class="text-xs font-semibold text-red-500 mt-1">{{ form.errors.password }}</p>
           </div>
 

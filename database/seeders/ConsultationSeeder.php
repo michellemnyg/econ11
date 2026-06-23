@@ -14,46 +14,82 @@ class ConsultationSeeder extends Seeder
             'BKD Prov. Sulawesi Utara', 'BKPSDM Kota Manado',
             'BKPSDM Kab. Minahasa', 'BKPSDM Kota Tomohon', 'BKPSDM Kota Bitung'
         ];
-        $narasumberList = ['Budi Santoso', 'Siti Aminah', 'Andi Wijaya', 'Rina Melati'];
         $sesiList = ['sesi-1', 'sesi-2', 'sesi-3', 'sesi-4', 'sesi-5'];
 
-        // Acuan waktu saat ini (30 Maret 2026)
-        $currentDate = Carbon::create(2026, 3, 30, 22, 6, 0, 'Asia/Makassar');
+        // Get the narasumber user ID
+        $narasumberUser = \App\Models\User::where('username', 'narasumber')->first();
+        $narasumberId = $narasumberUser ? $narasumberUser->id : null;
 
-        // Generate 40 data konsultasi acak
-        for ($i = 1; $i <= 40; $i++) {
-            // Sebar tanggal dari 14 hari yang lalu hingga 14 hari ke depan
-            $daysOffset = rand(-14, 14);
-            $tanggal = (clone $currentDate)->addDays($daysOffset)->format('Y-m-d');
+        $schedules = [];
+        $counts = [2, 5, 1];
+        $currentDate = Carbon::now()->addDay();
+        
+        foreach ($counts as $count) {
+            while ($currentDate->isWeekend()) {
+                $currentDate->addDay();
+            }
+            $schedules[] = ['tanggal' => clone $currentDate, 'count' => $count];
+            $currentDate->addDay();
+        }
 
-            // Logika Status: Karena sudah jam 22:06, hari ini dan sebelumnya = Selesai
-            $isPast = $daysOffset <= 0;
-            $status = $isPast ? 'selesai' : 'akan_datang';
+        $i = 1;
+        foreach ($schedules as $schedule) {
+            $availableSesi = $sesiList;
+            if ($schedule['tanggal']->dayOfWeek === Carbon::TUESDAY) {
+                $availableSesi = array_values(array_diff($sesiList, ['sesi-1']));
+            }
 
-            // Logika Narasumber: Jika sudah selesai, PASTI ada narasumber.
-            // Jika akan datang, 50% kemungkinan belum di-plot (null).
-            $narasumber = null;
-            if ($isPast || rand(0, 1)) {
-                $narasumber = $narasumberList[array_rand($narasumberList)];
+            for ($j = 0; $j < $schedule['count']; $j++) {
+                Consultation::create([
+                    'nip' => 'nip',
+                    'nama' => 'nama',
+                    'jabatan' => 'Analis Sumber Daya Manusia Aparatur',
+                    'instansi' => $instansiList[array_rand($instansiList)],
+                    'topik_id' => rand(1, 17),
+                    'deskripsi_masalah' => 'Ini adalah data simulasi terjadwal ke-' . $i,
+                    'tanggal' => $schedule['tanggal']->format('Y-m-d'),
+                    'sesi' => $availableSesi[$j % count($availableSesi)],
+                    'email' => 'klien' . $i . '@example.com',
+                    'no_hp' => '0812' . rand(10000000, 99999999),
+                    'status' => 'akan_datang',
+                    'petugas_id' => $narasumberId,
+                    'zoom_meeting_id' => '8' . rand(1000000000, 9999999999),
+                    'zoom_link' => 'https://zoom.us/j/dummy' . $i,
+                    'zoom_passcode' => 'econ11',
+                ]);
+                $i++;
+            }
+        }
+
+        $randomBaseDate = Carbon::now()->addDays(5);
+        for ($k = 1; $k <= 10; $k++) {
+            while ($randomBaseDate->isWeekend()) {
+                $randomBaseDate->addDay();
+            }
+
+            $availSesi = $sesiList;
+            if ($randomBaseDate->dayOfWeek === Carbon::TUESDAY) {
+                $availSesi = array_values(array_diff($sesiList, ['sesi-1']));
             }
 
             Consultation::create([
-                'nip' => '19' . rand(70, 99) . rand(10, 12) . rand(10, 30) . '20' . rand(10, 24) . '100' . rand(1, 9),
-                'nama' => 'ASN Klien ' . $i,
-                'jabatan' => 'Analis Sumber Daya Manusia Aparatur',
+                'nip' => 'nip',
+                'nama' => 'nama',
+                'jabatan' => 'Jabatan Acak',
                 'instansi' => $instansiList[array_rand($instansiList)],
-                'topik_id' => rand(1, 17), // Asumsi Anda punya 17 topik di database
-                'deskripsi_masalah' => 'Ini adalah data simulasi deskripsi masalah kepegawaian untuk testing sistem e-con BKN fase 5.',
-                'tanggal' => $tanggal,
-                'sesi' => $sesiList[array_rand($sesiList)],
-                'email' => 'klien' . $i . '@example.com',
+                'topik_id' => rand(1, 17),
+                'deskripsi_masalah' => 'Konsultasi acak belum di-assign ke-' . $k,
+                'tanggal' => (clone $randomBaseDate)->format('Y-m-d'),
+                'sesi' => $availSesi[array_rand($availSesi)],
+                'email' => 'random' . $k . '@example.com',
                 'no_hp' => '0812' . rand(10000000, 99999999),
-                'status' => $status,
-                'narasumber' => $narasumber,
-                'zoom_meeting_id' => '8' . rand(1000000000, 9999999999),
-                'zoom_link' => 'https://zoom.us/j/dummy' . $i,
-                'zoom_passcode' => 'econ11',
+                'status' => 'akan_datang',
+                'petugas_id' => null,
+                'zoom_meeting_id' => null,
+                'zoom_link' => null,
+                'zoom_passcode' => null,
             ]);
+            $randomBaseDate->addDays(rand(1, 3));
         }
     }
 }

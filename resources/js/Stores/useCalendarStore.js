@@ -6,7 +6,6 @@ const isLoaded = ref(false)
 
 export function useCalendarStore() {
   async function loadCalendar(forceRefresh = false) {
-    // Jika sudah pernah load dan tidak dipaksa refresh, return
     if (isLoaded.value && !forceRefresh) return
 
     calendarSessions.value = await getCalendarSessions()
@@ -17,7 +16,6 @@ export function useCalendarStore() {
     const day = calendarSessions.value.find(d => d.tanggal === tanggal)
 
     if (day) {
-      // ❌ prevent duplicate booking
       if (day.sesi.some(s => s.value === sesi.value)) return
 
       day.sesi.push({

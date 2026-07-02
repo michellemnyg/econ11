@@ -2,28 +2,24 @@
 import FrontLayout from '@/Layouts/FrontLayout.vue'
 import { Head } from '@inertiajs/vue3'
 import { ref, onMounted, computed, watch } from 'vue'
-import { Search, RefreshCcw, User, FileText } from 'lucide-vue-next'
+import { Search, RefreshCcw, User, FileText, AlertCircle } from 'lucide-vue-next'
 import ConsultationFeedbackModal from '@/Components/app/modals/ConsultationFeedbackModal.vue'
 import ConsultationCalendar from '@/Components/app/calendar/ConsultationCalendar.vue'
 import ConsultationSessionDetailModal from '@/Components/app/modals/ConsultationSessionDetailModal.vue'
 
 import { useCalendarStore } from '@/Stores/useCalendarStore'
 
-// composables
 import { useConsultationFormValidation } from '@/Composables/useConsultationFormValidation'
 import { useConsultationSchedule } from '@/Composables/useConsultationSchedule'
 
-// services
 import { findAsn } from '@/Services/asn.service'
 import { submitConsultation } from '@/Services/consultation.service'
 import { checkIsHoliday } from '@/Services/holiday.service'
 
-// mocks
 import { CONSULTATION_TOPICS } from '@/Mocks/consultation-topics.mock'
 
 import axios from 'axios'
 
-// Terima props dari Laravel (URL awal gambar captcha)
 const props = defineProps({
   captcha_url: {
     type: String,
@@ -31,18 +27,12 @@ const props = defineProps({
   }
 })
 
-/**
- * Calendar Store
- */
 const { addBookedSession, loadCalendar } = useCalendarStore()
 
 onMounted(loadCalendar)
 
 const calendarRef = ref(null)
 
-/**
- * State
- */
 const nip = ref('')
 const nama = ref('')
 const asn = ref(null)
@@ -65,9 +55,6 @@ watch([nip, nama], () => {
   if (searchError.value) searchError.value = ''
 })
 
-/**
- * Session modal
- */
 const selectedSession = ref(null)
 const sessionModalOpen = ref(false)
 
@@ -76,9 +63,6 @@ const openSessionDetail = (session) => {
   sessionModalOpen.value = true
 }
 
-/**
- * Composables
- */
 const {
   errors: formErrors,
   validate,
@@ -88,15 +72,9 @@ const {
 
 const { availableSessions } = useConsultationSchedule(form)
 
-/**
- * Feedback modal
- */
 const modalOpen = ref(false)
 const modalType = ref('error')
 
-/**
- * Computed
- */
 const canSearch = computed(() => {
   return nip.value.length > 0 && nama.value.length > 0
 })
@@ -112,9 +90,6 @@ const isWeekend = computed(() => {
   return day === 0 || day === 6
 })
 
-/**
- * Methods Captcha Server-Side
- */
 const captchaImgUrl = ref(props.captcha_url)
 
 const refreshCaptcha = async () => {
@@ -126,9 +101,6 @@ const refreshCaptcha = async () => {
   }
 }
 
-/**
- * Methods
- */
 async function cekDataAsn() {
   if(!canSearch.value) return
 
@@ -156,7 +128,6 @@ async function submitForm() {
   isSubmitting.value = true;
   clearErrors();
 
-  // Siapkan data lengkap untuk dikirim ke Laravel
   const payload = {
     ...form.value,
     nip: nip.value,
@@ -166,16 +137,11 @@ async function submitForm() {
   };
 
   try {
-    // 1. Kirim data ke Backend dan dapatkan respons (termasuk data Zoom)
     const response = await submitConsultation(payload);
 
-    // 2. Cari detail teks topik berdasarkan ID untuk keperluan tampilan UI
     const selectedTopic = CONSULTATION_TOPICS.find(
       t => t.value === parseInt(form.value.topik) || t.value === form.value.topik
     );
-
-    // 3. Masukkan hasil ke consultationResult (Data asli dari Zoom API)
-    // Struktur 'response.meeting' berasal dari return json ConsultationController kita
     consultationResult.value = {
       ...response.data,
       meeting: {
@@ -184,7 +150,6 @@ async function submitForm() {
       }
     };
 
-    // 4. Update jadwal di Kalender (Pinia Store)
     addBookedSession({
       tanggal: form.value.tanggal,
       sesi: {
@@ -197,16 +162,13 @@ async function submitForm() {
       },
     });
 
-    // 5. Tampilkan Modal Sukses
     modalType.value = 'success';
     modalOpen.value = true;
 
   } catch (error) {
-    // Tangani Error 422 (Validasi gagal / Captcha salah)
     if (error.response?.status === 422) {
       const backendErrors = error.response.data.errors;
 
-      // Map error ke masing-masing field input
       for (const field in backendErrors) {
         if (formErrors.value !== undefined) {
           formErrors.value[field] = backendErrors[field][0];
@@ -215,19 +177,16 @@ async function submitForm() {
         }
       }
 
-      // Munculkan modal error khusus jika captcha yang bermasalah
       if (backendErrors.captchaInput) {
         modalType.value = 'error';
         modalOpen.value = true;
       }
     } else {
-      // Tangani Error 500 atau masalah koneksi
       console.error('Submission Error:', error.response?.data || error.message);
       modalType.value = 'error';
       modalOpen.value = true;
     }
 
-    // Refresh captcha setiap kali terjadi error submit
     refreshCaptcha();
     form.value.captchaInput = '';
   } finally {
@@ -266,9 +225,6 @@ function handleModalClose() {
   }
 }
 
-/**
- * Scroll helpers
- */
 const formSection = ref(null)
 
 const scrollToForm = () => {
@@ -338,8 +294,9 @@ const scrollToForm = () => {
                     {{ isSearching ? 'Memeriksa...' : 'Validasi Data ASN' }}
                 </button>
 
-                <div v-if="searchError" class="p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm flex items-center gap-2">
-                    <span class="font-bold">!</span> {{ searchError }}
+                <div v-if="searchError" class="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm flex items-start gap-2 shadow-sm">
+                    <AlertCircle class="w-4 h-4 mt-0.5 shrink-0" />
+                    <span>{{ searchError }}</span>
                 </div>
             </div>
 

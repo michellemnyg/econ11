@@ -1,7 +1,3 @@
-/**
- * Simulasi data booking dari DB
- * 1 record = 1 sesi terpakai (karena 1 host Zoom)
- */
 export const CONSULTATION_BOOKINGS_MOCK = [
   {
     date: '2025-03-31',

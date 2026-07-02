@@ -1,6 +1,3 @@
-/**
- * Return true jika tanggal < hari ini
- */
 import { getTodayWitaDate } from './timezone'
 
 export function isPastDate(dateString) {
@@ -8,9 +5,6 @@ export function isPastDate(dateString) {
   return dateString < today
 }
 
-/**
- * Return true jika waktu sesi sudah lewat (hari ini)
- */
 import { getNowWita } from './timezone'
 
 export function isPastSessionToday(session) {
@@ -25,9 +19,6 @@ export function isPastSessionToday(session) {
   return now >= sessionTime
 }
 
-/**
- * Selasa = 2 (0 = Minggu)
- */
 export function isTuesday(dateString) {
   return new Date(dateString).getDay() === 2
 }

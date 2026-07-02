@@ -1,12 +1,6 @@
-// src/Mocks/consultations.mock.ts
 import { ConsultationRow } from '@/Domain/Consultation/consultation.types'
 
 export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
-  /**
-   * 1️⃣ Akan datang
-   * - Belum ada petugas
-   * - Meeting SUDAH tergenerate
-   */
   {
     id: 1,
     tanggal: '2026-02-10',
@@ -31,11 +25,6 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     createdAt: '2026-02-05T07:50:00Z',
   },
 
-  /**
-   * 2️⃣ Sedang berlangsung
-   * - Petugas sudah di-assign
-   * - Link tersedia & bisa dicopy dari tabel
-   */
   {
     id: 2,
     tanggal: '2026-02-05',
@@ -60,11 +49,6 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     createdAt: '2026-02-04T09:55:00Z',
   },
 
-  /**
-   * 3️⃣ Akan datang
-   * - Petugas sudah ada
-   * - Meeting BELUM tergenerate
-   */
   {
     id: 3,
     tanggal: '2026-02-12',
@@ -89,11 +73,6 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     createdAt: '2026-02-05T08:10:00Z',
   },
 
-  /**
-   * 4️⃣ Sudah berlalu
-   * - Lengkap
-   * - Untuk badge "berlalu"
-   */
   {
     id: 4,
     tanggal: '2026-01-20',
@@ -142,7 +121,7 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     createdAt: '2026-01-18T12:55:00Z',
   },
 
-    {
+  {
     id: 6,
     tanggal: '2026-02-06',
     sesi: 'Sesi 5 (15:00 - 15:45)',
@@ -166,7 +145,7 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     createdAt: '2026-01-18T12:55:00Z',
   },
 
-    {
+  {
     id: 6,
     tanggal: '2026-02-06',
     sesi: 'Sesi 4 (14:00 - 14:45)',
@@ -190,7 +169,7 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     createdAt: '2026-01-18T12:55:00Z',
   },
 
-    {
+  {
     id: 7,
     tanggal: '2026-02-12',
     sesi: 'Sesi 4 (14:00 - 14:45)',
@@ -238,7 +217,7 @@ export const CONSULTATION_TABLE_MOCK: ConsultationRow[] = [
     createdAt: '2026-02-05T08:10:00Z',
   },
 
-    {
+  {
     id: 9,
     tanggal: '2026-02-12',
     sesi: 'Sesi 5 (15:00 - 16:45)',

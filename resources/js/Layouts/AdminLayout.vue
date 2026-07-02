@@ -6,10 +6,8 @@ import { LayoutDashboard, Users, LogOut, Menu } from 'lucide-vue-next'
 const page = usePage()
 const sidebarOpen = ref(false)
 
-// 100% AMBIL DARI DATABASE (Tanpa Mockup Fallback)
 const user = computed(() => page.props.auth?.user || { name: 'Loading...', role: '' })
 
-// Normalisasi role menjadi huruf kecil agar styling CSS (merah/biru/hijau) selalu akurat
 const userRole = computed(() => (user.value.role || '').toLowerCase())
 
 const pageTitle = computed(() => {

@@ -63,6 +63,7 @@ const submit = () => {
 
         <form @submit.prevent="submit" class="space-y-5">
           <div class="space-y-1.5">
+            <p v-if="form.errors.nip" class="text-sm font-semibold text-red-500">{{ form.errors.nip }}</p>
             <label class="block text-sm font-bold text-slate-700">Nomor Induk Pegawai (NIP)</label>
             <input
               type="text"
@@ -72,7 +73,6 @@ const submit = () => {
               required
               autofocus
             />
-            <p v-if="form.errors.nip" class="text-xs font-semibold text-red-500 mt-1">{{ form.errors.nip }}</p>
           </div>
 
           <div class="space-y-1.5">

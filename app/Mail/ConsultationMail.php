@@ -4,13 +4,12 @@ namespace App\Mail;
 
 use App\Models\Consultation;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class ConsultationMail extends Mailable implements ShouldQueue
+class ConsultationMail extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     public $consultation;
 

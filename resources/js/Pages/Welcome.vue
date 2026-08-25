@@ -472,6 +472,25 @@ const scrollToForm = () => {
 
   </FrontLayout>
 
+  <transition
+    enter-active-class="transition duration-300 ease-out"
+    enter-from-class="opacity-0"
+    enter-to-class="opacity-100"
+    leave-active-class="transition duration-200 ease-in"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
+  >
+    <div v-if="isSubmitting" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+      <div class="bg-white rounded-2xl p-8 flex flex-col items-center shadow-xl max-w-sm w-full mx-4">
+        <RefreshCcw class="w-12 h-12 text-red-600 animate-spin mb-4" />
+        <h3 class="text-lg font-bold text-slate-800 mb-2">Memproses Permintaan...</h3>
+        <p class="text-sm text-slate-500 text-center leading-relaxed">
+          Mohon tunggu sebentar, kami sedang memproses data, membuat ruang Zoom, dan mengirimkan email notifikasi.
+        </p>
+      </div>
+    </div>
+  </transition>
+
   <ConsultationFeedbackModal
     :open="modalOpen"
     :type="modalType"
